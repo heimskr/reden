@@ -1,6 +1,11 @@
+ifeq ($(BUILD),release)
+BUILDFLAGS := -O3
+else
+BUILDFLAGS := -g -O0
+endif
+
 COMPILER   ?= g++
-BUILDFLAGS ?= -O3
-CFLAGS     := -Wall -Wextra -std=c++20 $(BUILDFLAGS) -Ipingpong/include
+CPPFLAGS   := -Wall -Wextra -std=c++20 $(BUILDFLAGS) -Ipingpong/include
 PPSRC      := $(shell find pingpong/src -name \*.cpp)
 PPOBJ      := $(patsubst pingpong/src/%.cpp,pingpong/build/%.o,$(PPSRC))
 SOURCES    := $(shell find src -name \*.cpp) src/resources.cpp
@@ -27,12 +32,12 @@ $(OUTPUT): libpingpong.a $(OBJECTS)
 
 %.o: %.cpp
 	@ printf "\e[2m[\e[22;32mCC\e[39;2m]\e[22m $< \e[2m$(BUILDFLAGS)\e[22m\n"
-	@ $(COMPILER) $(CFLAGS) $(GTKFLAGS) -Iinclude -c $< -o $@
+	@ $(COMPILER) $(CPPFLAGS) $(GTKFLAGS) -Iinclude -c $< -o $@
 
 pingpong/build/%.o: pingpong/src/%.cpp
 	@ mkdir -p $(dir $@)
 	@ printf "\e[2m[\e[22;32mCC\e[39;2m]\e[22m $< \e[2m$(BUILDFLAGS)\e[22m\n"
-	@ $(COMPILER) $(CFLAGS) -c $< -o $@
+	@ $(COMPILER) $(CPPFLAGS) -c $< -o $@
 
 src/resources.cpp: reden.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=resources --generate-dependencies reden.gresource.xml)
 	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=resources --generate-source $<
@@ -42,3 +47,13 @@ clean:
 
 destroy:
 	rm -rf $(OUTPUT) $(OBJECTS) $(PPOBJ) libpingpong.a
+
+DEPFILE  := .dep
+DEPTOKEN := "\# MAKEDEPENDS"
+
+depend:
+	@ echo $(DEPTOKEN) > $(DEPFILE)
+	makedepend -f $(DEPFILE) -s $(DEPTOKEN) -- $(COMPILER) $(CPPFLAGS) -Iinclude -- $(SOURCES) 2>/dev/null
+	@ rm $(DEPFILE).bak
+
+sinclude $(DEPFILE)
