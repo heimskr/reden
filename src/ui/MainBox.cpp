@@ -8,12 +8,15 @@ namespace Reden {
 		serverTree.set_size_request(300, -1);
 		userTree.set_size_request(300, -1);
 		append(serverTree);
+		append(leftSeparator);
 		append(chatBox);
+		append(rightSeparator);
 		append(userTree);
 		chatBox.append(topic);
 		chatBox.append(scrolled);
 		chatBox.append(chatEntry);
+		chatEntry.add_css_class("unrounded");
 		scrolled.set_vexpand(true);
-		scrolled.set_child(chatGrid);	
+		scrolled.set_child(chatGrid);
 	}
 }

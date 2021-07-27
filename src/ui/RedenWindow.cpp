@@ -8,11 +8,16 @@ namespace Reden {
 		header = builder->get_widget<Gtk::HeaderBar>("headerbar");
 		set_titlebar(*header);
 
+		cssProvider = Gtk::CssProvider::create();
+		cssProvider->load_from_resource("/com/heimskr/reden/style.css");
+		Gtk::StyleContext::add_provider_for_display(Gdk::Display::get_default(), cssProvider,
+			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {
-			set_child(mainBox);
+
 		}));
 
-		set_child(unconnectedLabel);
+		set_child(mainBox);
 	}
 
 	RedenWindow * RedenWindow::create() {

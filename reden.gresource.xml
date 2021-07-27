@@ -2,5 +2,6 @@
 <gresources>
 	<gresource prefix="/com/heimskr/reden">
 		<file preprocess="xml-stripblanks">window.ui</file>
+		<file>style.css</file>
 	</gresource>
 </gresources>

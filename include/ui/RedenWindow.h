@@ -17,7 +17,7 @@ namespace Reden {
 
 		private:
 			Glib::RefPtr<Gtk::Builder> builder;
-			Gtk::Label unconnectedLabel {"Unconnected."};
+			Glib::RefPtr<Gtk::CssProvider> cssProvider;
 			ConnectionMap connections;
 			MainBox mainBox;
 	};

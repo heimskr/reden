@@ -15,6 +15,7 @@ namespace Reden {
 			ConnectionMap &connections;
 			Gtk::TreeView serverTree, userTree;
 			Glib::RefPtr<Gtk::ListStore> serverModel, userModel;
+			Gtk::Separator leftSeparator, rightSeparator;
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
 			Gtk::Label topic;
 			Gtk::ScrolledWindow scrolled;
