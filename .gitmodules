@@ -1,0 +1,3 @@
+[submodule "pingpong"]
+	path = pingpong
+	url = https://github.com/heimskr/pingpong.git

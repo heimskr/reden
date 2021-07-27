@@ -1,0 +1,5 @@
+*.o
+/reden
+/.dep
+.vscode
+prefs.ini
