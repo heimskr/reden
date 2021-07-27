@@ -1,5 +1,8 @@
 #include <iostream>
 
-int main() {
-	std::cout << "Hello, World!\n";
+#include "App.h"
+
+int main(int argc, char *argv[]) {
+	Glib::RefPtr<Reden::App> app = Reden::App::create();
+	return app->run(argc, argv);
 }

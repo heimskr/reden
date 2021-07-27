@@ -4,3 +4,4 @@
 .vscode
 prefs.ini
 libpingpong.a
+src/resources.cpp
