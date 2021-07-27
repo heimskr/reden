@@ -4,13 +4,15 @@
 
 namespace Reden {
 	RedenWindow::RedenWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder_):
-	Gtk::ApplicationWindow(cobject), builder(builder_) {
+	Gtk::ApplicationWindow(cobject), builder(builder_), mainBox(connections) {
 		header = builder->get_widget<Gtk::HeaderBar>("headerbar");
 		set_titlebar(*header);
 
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {
-			std::cout << "connect\n";
+			set_child(mainBox);
 		}));
+
+		set_child(unconnectedLabel);
 	}
 
 	RedenWindow * RedenWindow::create() {

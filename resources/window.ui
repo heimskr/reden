@@ -3,8 +3,8 @@
 	<requires lib="gtk+" version="4.0" />
 	<object class="GtkApplicationWindow" id="reden_window">
 		<property name="title" translatable="yes">Reden</property>
-		<property name="default-width">600</property>
-		<property name="default-height">400</property>
+		<property name="default-width">1600</property>
+		<property name="default-height">1000</property>
 		<property name="hide-on-close">True</property>
 		<child type="titlebar">
 			<object class="GtkHeaderBar" id="headerbar">
@@ -37,6 +37,10 @@
 			<item>
 				<attribute name="label" translatable="yes">_Connect</attribute>
 				<attribute name="action">win.connect</attribute>
+			</item>
+			<item>
+				<attribute name="label" translatable="yes">_Disconnect</attribute>
+				<attribute name="action">win.disconnect</attribute>
 			</item>
 		</section>
 	</menu>
