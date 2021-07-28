@@ -6,6 +6,7 @@
 #include "pingpong/core/Server.h"
 
 namespace Reden {
+
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
 		serverModel = Gtk::TreeStore::create(serverColumns);
 		serverTree.set_model(serverModel);
@@ -16,6 +17,8 @@ namespace Reden {
 		userTree.set_vexpand(true);
 		serverTree.set_size_request(300, -1);
 		userTree.set_size_request(300, -1);
+		serverTree.set_can_focus(false);
+		userTree.set_can_focus(false);
 		append(serverTree);
 		append(leftSeparator);
 		append(chatBox);
@@ -37,14 +40,27 @@ namespace Reden {
 			chatEntry.set_text("");
 		});
 		chatEntry.grab_focus();
+		addStatusRow();
+		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
+	}
+
+	void MainBox::addStatusRow() {
+		auto row = serverModel->append();
+		(*row)[serverColumns.name] = "Status";
+		(*row)[serverColumns.pointer] = this;
+		serverRows.emplace(this, row);
+	}
+
+	void MainBox::focusEntry() {
+		chatEntry.grab_focus();
 	}
 
 	void MainBox::addServer(PingPong::Server *server) {
 		if (serverRows.count(server) != 0)
 			return;
-		std::cout << "Adding server[" << server->id << "]\n";
 		auto row = serverModel->append();
 		(*row)[serverColumns.name] = server->id;
+		(*row)[serverColumns.pointer] = server;
 		serverRows.emplace(server, row);
 	}
 
@@ -55,12 +71,34 @@ namespace Reden {
 		auto row = serverModel->append(iter->children());
 		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
 		(*row)[serverColumns.name] = channel->name;
+		(*row)[serverColumns.pointer] = channel;
 		channelRows.emplace(channel, row);
+	}
+
+	void MainBox::eraseServer(PingPong::Server *server) {
+		if (serverRows.count(server) == 0)
+			return;
+		auto iter = serverRows.at(server);
+		serverModel->erase(iter);
+		serverRows.erase(server);
 	}
 
 	void MainBox::eraseChannel(PingPong::Channel *channel) {
 		if (channelRows.count(channel) == 0)
 			return;
-		serverModel->erase(channelRows.at(channel));
+		auto iter = channelRows.at(channel);
+		serverModel->erase(iter);
+		channelRows.erase(channel);
+	}
+
+	void MainBox::focusServer(void *ptr) {
+		
+	}
+
+	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
+		if (auto iter = serverModel->get_iter(path)) {
+			if ((*iter)[serverColumns.pointer] == this) std::cout << "this\n"; else std::cout << "not this\n";
+			std::cout << "this[" << this << "], iter->pointer[" << (*iter)[serverColumns.pointer] << "]\n";
+		}
 	}
 }

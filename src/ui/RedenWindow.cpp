@@ -41,9 +41,15 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
-			if (ev->server->getStatus() == PingPong::Server::Stage::Ready) {
-				mainBox.addServer(ev->server);
-				std::cerr << "Connected to " << ev->server->id << "." << std::endl;
+			switch (ev->server->getStatus()) {
+				case PingPong::Server::Stage::Ready:
+					mainBox.addServer(ev->server);
+					break;
+				case PingPong::Server::Stage::Dead:
+					mainBox.eraseServer(ev->server);
+					break;
+				default:
+					break;
 			}
 		});
 
@@ -58,6 +64,7 @@ namespace Reden {
 					return;
 				}
 				irc->connect(hostname, nick, port, false);
+				mainBox.focusEntry();
 			});
 			connect->show();
 		}));
