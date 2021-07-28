@@ -6,13 +6,15 @@
 #include "ui/BasicEntry.h"
 
 namespace Reden {
+	class RedenWindow;
+
 	class MainBox: public Gtk::Box {
 		public:
 			MainBox() = delete;
-			MainBox(ConnectionMap &);
+			MainBox(RedenWindow &);
 
 		private:
-			ConnectionMap &connections;
+			RedenWindow &parent;
 			Gtk::TreeView serverTree, userTree;
 			Glib::RefPtr<Gtk::ListStore> serverModel, userModel;
 			Gtk::Separator leftSeparator, rightSeparator;

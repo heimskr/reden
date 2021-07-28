@@ -1,7 +1,11 @@
 #include "ui/MainBox.h"
+#include "ui/RedenWindow.h"
+
+#include "pingpong/core/Debug.h"
+#include "pingpong/core/Server.h"
 
 namespace Reden {
-	MainBox::MainBox(ConnectionMap &connections_): Gtk::Box(Gtk::Orientation::HORIZONTAL), connections(connections_) {
+	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
 		serverTree.set_vexpand(true);
 		chatBox.set_expand(true);
 		userTree.set_vexpand(true);
@@ -18,5 +22,14 @@ namespace Reden {
 		chatEntry.add_css_class("unrounded");
 		scrolled.set_vexpand(true);
 		scrolled.set_child(chatGrid);
+		chatEntry.signal_activate().connect([this]() {
+			if (parent.irc->activeServer) {
+				parent.irc->activeServer->quote(chatEntry.get_text());
+			} else {
+				DBG("No active server.");
+			}
+
+			chatEntry.set_text("");
+		});
 	}
 }
