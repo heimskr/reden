@@ -31,5 +31,6 @@ namespace Reden {
 
 			chatEntry.set_text("");
 		});
+		chatEntry.grab_focus();
 	}
 }

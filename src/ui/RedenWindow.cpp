@@ -50,6 +50,10 @@ namespace Reden {
 
 		signal_hide().connect([this] {
 			if (irc) {
+				for (auto &[name, server]: irc->servers)
+					server->quit("Leaving");
+				// Hack: wait for servers to die
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 				delete irc;
 				irc = nullptr;
 			}
