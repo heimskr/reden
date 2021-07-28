@@ -27,6 +27,7 @@ namespace Reden {
 			void addChannel(PingPong::Channel *, bool focus = false);
 			void eraseServer(PingPong::Server *);
 			void eraseChannel(PingPong::Channel *);
+			void addStatus(const std::string &);
 			LineView & getLineView(void *ptr);
 
 		private:

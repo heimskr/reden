@@ -18,7 +18,9 @@ namespace Reden {
 		   << std::setw(2) << times->tm_sec << "]";
 		auto &vector = widgets.emplace_back();
 		vector.reserve(2);
-		attach(*vector.emplace_back(std::make_unique<Gtk::Label>(ss.str(), Gtk::Align::START)), 0, row);
+		auto &timestamp = *vector.emplace_back(std::make_unique<Gtk::Label>(ss.str(), Gtk::Align::START));
+		timestamp.add_css_class("timestamp");
+		attach(timestamp, 0, row);
 		attach(*vector.emplace_back(std::make_unique<Gtk::Label>(text, Gtk::Align::START)), 1, row);
 		++row;
 		return *this;

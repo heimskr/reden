@@ -15,8 +15,8 @@ namespace Reden {
 		appendColumn(serverTree, "Name", serverColumns.name);
 		chatBox.set_expand(true);
 		userTree.set_vexpand(true);
-		serverTree.set_size_request(300, -1);
-		userTree.set_size_request(300, -1);
+		serverTree.set_size_request(200, -1);
+		userTree.set_size_request(200, -1);
 		serverTree.set_can_focus(false);
 		userTree.set_can_focus(false);
 		append(serverTree);
@@ -93,6 +93,10 @@ namespace Reden {
 		auto iter = channelRows.at(channel);
 		serverModel->erase(iter);
 		channelRows.erase(channel);
+	}
+
+	void MainBox::addStatus(const std::string &line) {
+		getLineView(this) += line;
 	}
 
 	LineView & MainBox::getLineView(void *ptr) {

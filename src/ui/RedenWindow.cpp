@@ -55,6 +55,8 @@ namespace Reden {
 			switch (ev->server->getStatus()) {
 				case PingPong::Server::Stage::Ready:
 					mainBox.addServer(ev->server, true);
+					mainBox.addStatus("Connected to " + ev->server->id + " (" + ev->server->hostname + ":"
+						+ std::to_string(ev->server->port) + ")");
 					break;
 				case PingPong::Server::Stage::Dead:
 					mainBox.eraseServer(ev->server);
