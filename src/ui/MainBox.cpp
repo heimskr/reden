@@ -56,4 +56,10 @@ namespace Reden {
 		(*row)[serverColumns.name] = channel->name;
 		channelRows.emplace(channel, row);
 	}
+
+	void MainBox::eraseChannel(PingPong::Channel *channel) {
+		if (channelRows.count(channel) == 0)
+			return;
+		serverModel->erase(channelRows.at(channel));
+	}
 }

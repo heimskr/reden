@@ -20,6 +20,7 @@ namespace Reden {
 
 			void addServer(PingPong::Server *);
 			void addChannel(PingPong::Channel *);
+			void eraseChannel(PingPong::Channel *);
 
 		private:
 			struct ServerColumns: public Gtk::TreeModelColumnRecord {

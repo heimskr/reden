@@ -11,6 +11,7 @@
 #include "ui/ConnectDialog.h"
 #include "ui/RedenWindow.h"
 #include "pingpong/events/Join.h"
+#include "pingpong/events/Part.h"
 #include "pingpong/events/ServerStatus.h"
 #include "lib/formicine/futil.h"
 
@@ -32,6 +33,11 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
 			if (ev->who->isSelf())
 				mainBox.addChannel(ev->channel.get());
+		});
+
+		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
+			if (ev->who->isSelf())
+				mainBox.eraseChannel(ev->channel.get());
 		});
 
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
