@@ -1,3 +1,4 @@
+#include "UI.h"
 #include "ui/MainBox.h"
 #include "ui/RedenWindow.h"
 
@@ -6,7 +7,11 @@
 
 namespace Reden {
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
+		serverModel = Gtk::TreeStore::create(serverColumns);
+		serverTree.set_model(serverModel);
 		serverTree.set_vexpand(true);
+		serverTree.set_headers_visible(false);
+		appendColumn(serverTree, "Name", serverColumns.name);
 		chatBox.set_expand(true);
 		userTree.set_vexpand(true);
 		serverTree.set_size_request(300, -1);
@@ -32,5 +37,18 @@ namespace Reden {
 			chatEntry.set_text("");
 		});
 		chatEntry.grab_focus();
+	}
+
+	void MainBox::addServer(const std::string &server_name) {
+		if (serverRows.count(server_name) != 0)
+			return;
+		std::cout << "Adding server_name[" << server_name << "]\n";
+		auto row = serverModel->append();
+		(*row)[serverColumns.name] = server_name;
+		serverRows.emplace(server_name, row);
+		for (int i = 1; i <= 5; ++i) {
+			auto subrow = serverModel->append(row->children());
+			(*subrow)[serverColumns.name] = std::to_string(i);
+		}
 	}
 }

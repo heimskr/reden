@@ -29,8 +29,10 @@ namespace Reden {
 		irc->init();
 
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
-			if (ev->server->getStatus() == PingPong::Server::Stage::Ready)
+			if (ev->server->getStatus() == PingPong::Server::Stage::Ready) {
+				mainBox.addServer(ev->server->id);
 				std::cerr << "Connected to " << ev->server->id << "." << std::endl;
+			}
 		});
 
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {
