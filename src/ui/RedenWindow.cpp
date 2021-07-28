@@ -33,7 +33,7 @@ namespace Reden {
 
 		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
 			if (ev->who->isSelf())
-				mainBox.addChannel(ev->channel.get());
+				mainBox.addChannel(ev->channel.get(), true);
 		});
 
 		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
@@ -54,7 +54,7 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
 			switch (ev->server->getStatus()) {
 				case PingPong::Server::Stage::Ready:
-					mainBox.addServer(ev->server);
+					mainBox.addServer(ev->server, true);
 					break;
 				case PingPong::Server::Stage::Dead:
 					mainBox.eraseServer(ev->server);

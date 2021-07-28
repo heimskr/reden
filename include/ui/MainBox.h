@@ -23,8 +23,8 @@ namespace Reden {
 			MainBox(RedenWindow &);
 
 			void focusEntry();
-			void addServer(PingPong::Server *);
-			void addChannel(PingPong::Channel *);
+			void addServer(PingPong::Server *, bool focus = false);
+			void addChannel(PingPong::Channel *, bool focus = false);
 			void eraseServer(PingPong::Server *);
 			void eraseChannel(PingPong::Channel *);
 			LineView & getLineView(void *ptr);
@@ -57,7 +57,7 @@ namespace Reden {
 			std::unordered_map<void *, LineView> views;
 
 			void addStatusRow();
-			void focusServer(void *);
+			void focusView(void *);
 			void serverRowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 	};
 }

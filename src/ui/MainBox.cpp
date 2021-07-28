@@ -55,16 +55,18 @@ namespace Reden {
 		chatEntry.grab_focus();
 	}
 
-	void MainBox::addServer(PingPong::Server *server) {
+	void MainBox::addServer(PingPong::Server *server, bool focus) {
 		if (serverRows.count(server) != 0)
 			return;
 		auto row = serverModel->append();
 		(*row)[serverColumns.name] = server->id;
 		(*row)[serverColumns.pointer] = server;
 		serverRows.emplace(server, row);
+		if (focus)
+			focusView(server);
 	}
 
-	void MainBox::addChannel(PingPong::Channel *channel) {
+	void MainBox::addChannel(PingPong::Channel *channel, bool focus) {
 		if (serverRows.count(channel->server) == 0)
 			addServer(channel->server);
 		auto iter = serverRows.at(channel->server);
@@ -73,6 +75,8 @@ namespace Reden {
 		(*row)[serverColumns.name] = channel->name;
 		(*row)[serverColumns.pointer] = channel;
 		channelRows.emplace(channel, row);
+		if (focus)
+			focusView(channel);
 	}
 
 	void MainBox::eraseServer(PingPong::Server *server) {
@@ -97,12 +101,12 @@ namespace Reden {
 		return views.at(ptr);
 	}
 
-	void MainBox::focusServer(void *ptr) {
+	void MainBox::focusView(void *ptr) {
 		scrolled.set_child(getLineView(ptr));
 	}
 
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
 		if (auto iter = serverModel->get_iter(path))
-			focusServer((*iter)[serverColumns.pointer]);
+			focusView((*iter)[serverColumns.pointer]);
 	}
 }
