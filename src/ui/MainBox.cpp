@@ -53,6 +53,7 @@ namespace Reden {
 			addServer(channel->server);
 		auto iter = serverRows.at(channel->server);
 		auto row = serverModel->append(iter->children());
+		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
 		(*row)[serverColumns.name] = channel->name;
 		channelRows.emplace(channel, row);
 	}
