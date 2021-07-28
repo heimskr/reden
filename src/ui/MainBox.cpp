@@ -39,16 +39,21 @@ namespace Reden {
 		chatEntry.grab_focus();
 	}
 
-	void MainBox::addServer(const std::string &server_name) {
-		if (serverRows.count(server_name) != 0)
+	void MainBox::addServer(PingPong::Server *server) {
+		if (serverRows.count(server) != 0)
 			return;
-		std::cout << "Adding server_name[" << server_name << "]\n";
+		std::cout << "Adding server[" << server->id << "]\n";
 		auto row = serverModel->append();
-		(*row)[serverColumns.name] = server_name;
-		serverRows.emplace(server_name, row);
-		for (int i = 1; i <= 5; ++i) {
-			auto subrow = serverModel->append(row->children());
-			(*subrow)[serverColumns.name] = std::to_string(i);
-		}
+		(*row)[serverColumns.name] = server->id;
+		serverRows.emplace(server, row);
+	}
+
+	void MainBox::addChannel(PingPong::Channel *channel) {
+		if (serverRows.count(channel->server) == 0)
+			addServer(channel->server);
+		auto iter = serverRows.at(channel->server);
+		auto row = serverModel->append(iter->children());
+		(*row)[serverColumns.name] = channel->name;
+		channelRows.emplace(channel, row);
 	}
 }

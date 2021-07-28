@@ -10,6 +10,7 @@
 
 #include "ui/ConnectDialog.h"
 #include "ui/RedenWindow.h"
+#include "pingpong/events/Join.h"
 #include "pingpong/events/ServerStatus.h"
 #include "lib/formicine/futil.h"
 
@@ -28,9 +29,14 @@ namespace Reden {
 
 		irc->init();
 
+		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
+			if (ev->who->isSelf())
+				mainBox.addChannel(ev->channel.get());
+		});
+
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
 			if (ev->server->getStatus() == PingPong::Server::Stage::Ready) {
-				mainBox.addServer(ev->server->id);
+				mainBox.addServer(ev->server);
 				std::cerr << "Connected to " << ev->server->id << "." << std::endl;
 			}
 		});

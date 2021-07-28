@@ -5,6 +5,11 @@
 #include "Connection.h"
 #include "ui/BasicEntry.h"
 
+namespace PingPong {
+	class Server;
+	class Channel;
+}
+
 namespace Reden {
 	class RedenWindow;
 
@@ -13,7 +18,8 @@ namespace Reden {
 			MainBox() = delete;
 			MainBox(RedenWindow &);
 
-			void addServer(const std::string &server_name);
+			void addServer(PingPong::Server *);
+			void addChannel(PingPong::Channel *);
 
 		private:
 			struct ServerColumns: public Gtk::TreeModelColumnRecord {
@@ -34,6 +40,7 @@ namespace Reden {
 			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;
 			ServerColumns serverColumns;
-			std::unordered_map<std::string, Gtk::TreeModel::iterator> serverRows;
+			std::unordered_map<PingPong::Server *, Gtk::TreeModel::iterator> serverRows;
+			std::unordered_map<PingPong::Channel *, Gtk::TreeModel::iterator> channelRows;
 	};
 }
