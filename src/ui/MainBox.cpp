@@ -91,14 +91,18 @@ namespace Reden {
 		channelRows.erase(channel);
 	}
 
+	LineView & MainBox::getLineView(void *ptr) {
+		if (views.count(ptr) == 0)
+			views.emplace(ptr, LineView());
+		return views.at(ptr);
+	}
+
 	void MainBox::focusServer(void *ptr) {
-		
+		scrolled.set_child(getLineView(ptr));
 	}
 
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
-		if (auto iter = serverModel->get_iter(path)) {
-			if ((*iter)[serverColumns.pointer] == this) std::cout << "this\n"; else std::cout << "not this\n";
-			std::cout << "this[" << this << "], iter->pointer[" << (*iter)[serverColumns.pointer] << "]\n";
-		}
+		if (auto iter = serverModel->get_iter(path))
+			focusServer((*iter)[serverColumns.pointer]);
 	}
 }

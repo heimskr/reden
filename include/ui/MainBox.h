@@ -7,6 +7,7 @@
 
 #include "Connection.h"
 #include "ui/BasicEntry.h"
+#include "ui/LineView.h"
 
 namespace PingPong {
 	class Server;
@@ -26,6 +27,7 @@ namespace Reden {
 			void addChannel(PingPong::Channel *);
 			void eraseServer(PingPong::Server *);
 			void eraseChannel(PingPong::Channel *);
+			LineView & getLineView(void *ptr);
 
 		private:
 			struct ServerColumns: public Gtk::TreeModelColumnRecord {
@@ -52,6 +54,7 @@ namespace Reden {
 			// dummy pointer to this MainBox for the status window.
 			std::unordered_map<void *, Gtk::TreeModel::iterator> serverRows;
 			std::unordered_map<PingPong::Channel *, Gtk::TreeModel::iterator> channelRows;
+			std::unordered_map<void *, LineView> views;
 
 			void addStatusRow();
 			void focusServer(void *);

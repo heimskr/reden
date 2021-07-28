@@ -12,6 +12,7 @@
 #include "ui/RedenWindow.h"
 #include "pingpong/events/Join.h"
 #include "pingpong/events/Part.h"
+#include "pingpong/events/Privmsg.h"
 #include "pingpong/events/ServerStatus.h"
 #include "lib/formicine/futil.h"
 
@@ -38,6 +39,16 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
 			if (ev->who->isSelf())
 				mainBox.eraseChannel(ev->channel.get());
+		});
+
+		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
+			if (ev->isChannel()) {
+				auto channel = ev->server->getChannel(ev->where);
+				std::string str = "<";
+				str += static_cast<char>(channel->getHats(ev->speaker).highest());
+				str += ev->speaker->name + "> " + ev->content;
+				mainBox.getLineView(channel.get()) += str;
+			}
 		});
 
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
