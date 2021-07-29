@@ -107,6 +107,10 @@ namespace Reden {
 
 	void MainBox::focusView(void *ptr) {
 		scrolled.set_child(getLineView(ptr));
+		if (serverRows.count(ptr) != 0)
+			serverTree.get_selection()->select(serverRows.at(ptr));
+		else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0)
+			serverTree.get_selection()->select(channelRows.at(reinterpret_cast<PingPong::Channel *>(ptr)));
 	}
 
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
