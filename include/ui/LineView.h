@@ -23,10 +23,12 @@ namespace Reden {
 			LineView & joined(const std::string &name, const std::string &channel);
 			LineView & mode(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                const PingPong::ModeSet &);
+			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
+			                        const std::string &);
 
 		private:
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
-			                           modesTag, userTag;
+			                           modesTag, userTag, topicTag;
 			static std::string makeTimestamp(time_t);
 			static std::string makeTimestamp();
 
@@ -36,5 +38,7 @@ namespace Reden {
 			LineView & addNewline();
 			LineView & addTime();
 			LineView & addStar();
+
+			void setBold(Glib::RefPtr<Gtk::TextTag>);
 	};
 }

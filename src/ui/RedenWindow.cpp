@@ -205,8 +205,10 @@ namespace Reden {
 
 		PingPong::Events::listen<PingPong::TopicEvent>([this](PingPong::TopicEvent *ev) {
 			auto channel = ev->channel;
-			queue([this, channel] {
+			auto who = ev->who;
+			queue([this, channel, who] {
 				mainBox.setTopic(channel.get(), std::string(channel->topic));
+				mainBox[channel].topicChanged(channel, who, std::string(channel->topic));
 			});
 		});
 	}

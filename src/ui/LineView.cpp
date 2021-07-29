@@ -21,12 +21,14 @@ namespace Reden {
 		channelTag = buffer.create_tag("channel");
 		  modesTag = buffer.create_tag("modes");
 		   userTag = buffer.create_tag("user"); // For things like mode lines
+		  topicTag = buffer.create_tag("topic");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
-		   nameTag->property_weight()     = nameTag->property_weight() * 2;
-		 actionTag->property_weight()     = actionTag->property_weight() * 2;
-		channelTag->property_weight()     = channelTag->property_weight() * 2;
-		   userTag->property_weight()     = userTag->property_weight() * 2;
+		setBold(nameTag);
+		setBold(actionTag);
+		setBold(channelTag);
+		setBold(userTag);
+		setBold(topicTag);
 	}
 
 	LineView & LineView::operator+=(const std::string &text) {
@@ -54,6 +56,16 @@ namespace Reden {
 		append(modeset.modeString(), "modes");
 		if (!modeset.extra.empty())
 			append(" on ").append(modeset.extra, "user");
+		return *this;
+	}
+
+	LineView & LineView::topicChanged(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
+	                                  const std::string &topic) {
+		start();
+		if (!who)
+			append("Topic for ").append(channel->name, "channel").append(" is ").append(topic, "topic");
+		else
+			append(channel->withHat(who), "user").append(" changed the topic to ").append(topic, "topic");
 		return *this;
 	}
 
@@ -100,5 +112,9 @@ namespace Reden {
 
 	std::string LineView::makeTimestamp() {
 		return makeTimestamp(std::time(nullptr));
+	}
+
+	void LineView::setBold(Glib::RefPtr<Gtk::TextTag> tag) {
+		tag->property_weight() = 2 * tag->property_weight();
 	}
 }
