@@ -176,7 +176,18 @@ namespace Reden {
 				raw.pop_back();
 			queue([this, server, raw] {
 				mainBox.addServer(server, false);
-				mainBox[server] += raw;
+				mainBox[server] += "<< " + raw;
+			});
+		});
+
+		PingPong::Events::listen<PingPong::RawOutEvent>([this](PingPong::RawOutEvent *ev) {
+			auto server = ev->server;
+			auto raw = ev->rawOut;
+			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
+				raw.pop_back();
+			queue([this, server, raw] {
+				mainBox.addServer(server, false);
+				mainBox[server] += ">> " + raw;
 			});
 		});
 
