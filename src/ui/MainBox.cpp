@@ -108,6 +108,20 @@ namespace Reden {
 		return views.at(ptr);
 	}
 
+	const LineView & MainBox::getLineView(void *ptr) const {
+		return views.at(ptr);
+	}
+
+	LineView & MainBox::operator[](void *ptr) {
+		if (views.count(ptr) == 0)
+			return views.emplace(ptr, LineView()).first->second;
+		return views.at(ptr);
+	}
+
+	const LineView & MainBox::operator[](void *ptr) const {
+		return views.at(ptr);
+	}
+
 	void MainBox::setTopic(void *ptr, const std::string &topic) {
 		topics[ptr] = topic;
 		if (activeView == ptr)

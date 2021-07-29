@@ -1,8 +1,8 @@
 #pragma once
 
 #include <gtkmm.h>
-
 #include <map>
+#include <memory>
 #include <unordered_map>
 
 #include "Connection.h"
@@ -30,7 +30,30 @@ namespace Reden {
 			void eraseChannel(PingPong::Channel *);
 			void addStatus(const std::string &);
 			LineView & getLineView(void *ptr);
+			const LineView & getLineView(void *ptr) const;
+			LineView & operator[](void *ptr);
+			const LineView & operator[](void *ptr) const;
 			void setTopic(void *ptr, const std::string &);
+
+			template <typename T>
+			LineView & getLineView(std::shared_ptr<T> ptr) {
+				return getLineView(ptr.get());
+			}
+
+			template <typename T>
+			const LineView & getLineView(std::shared_ptr<T> ptr) const {
+				return getLineView(ptr.get());
+			}
+
+			template <typename T>
+			LineView & operator[](std::shared_ptr<T> ptr) {
+				return (*this)[ptr.get()];
+			}
+
+			template <typename T>
+			const LineView & operator[](std::shared_ptr<T> ptr) const {
+				return (*this)[ptr.get()];
+			}
 
 		private:
 			struct ServerColumns: public Gtk::TreeModelColumnRecord {

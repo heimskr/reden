@@ -13,6 +13,7 @@
 #include "pingpong/events/Join.h"
 #include "pingpong/events/Part.h"
 #include "pingpong/events/Privmsg.h"
+#include "pingpong/events/Raw.h"
 #include "pingpong/events/ServerStatus.h"
 #include "pingpong/events/Topic.h"
 #include "lib/formicine/futil.h"
@@ -38,7 +39,7 @@ namespace Reden {
 				auto name = ev->who->name;
 				queue([this, channel, name] {
 					mainBox.addChannel(channel.get(), true);
-					mainBox.getLineView(channel.get()).joined(name, channel->name);
+					mainBox[channel].joined(name, channel->name);
 				});
 			}
 		});
@@ -60,9 +61,20 @@ namespace Reden {
 				name += static_cast<char>(channel->getHats(ev->speaker).highest());
 				name += ev->speaker->name;
 				queue([this, content, channel, name] {
-					mainBox.getLineView(channel.get()).addMessage(name, content);
+					mainBox[channel].addMessage(name, content);
 				});
 			}
+		});
+
+		PingPong::Events::listen<PingPong::RawInEvent>([this](PingPong::RawInEvent *ev) {
+			auto server = ev->server;
+			auto raw = ev->rawIn;
+			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
+				raw.pop_back();
+			queue([this, server, raw] {
+				mainBox.addServer(server, false);
+				mainBox[server] += raw;
+			});
 		});
 
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
