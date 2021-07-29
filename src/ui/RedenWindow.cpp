@@ -14,6 +14,7 @@
 #include "pingpong/events/Part.h"
 #include "pingpong/events/Privmsg.h"
 #include "pingpong/events/ServerStatus.h"
+#include "pingpong/events/Topic.h"
 #include "lib/formicine/futil.h"
 
 namespace Reden {
@@ -82,6 +83,13 @@ namespace Reden {
 				default:
 					break;
 			}
+		});
+
+		PingPong::Events::listen<PingPong::TopicEvent>([this](PingPong::TopicEvent *ev) {
+			auto channel = ev->channel;
+			queue([this, channel] {
+				mainBox.setTopic(channel.get(), std::string(channel->topic));
+			});
 		});
 
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {

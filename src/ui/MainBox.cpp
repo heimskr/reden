@@ -42,6 +42,7 @@ namespace Reden {
 		chatEntry.grab_focus();
 		addStatusRow();
 		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
+		setMargins(topicLabel, 5);
 	}
 
 	void MainBox::addStatusRow() {
@@ -105,15 +106,24 @@ namespace Reden {
 		return views.at(ptr);
 	}
 
+	void MainBox::setTopic(void *ptr, const std::string &topic) {
+		topics[ptr] = topic;
+		if (activeView == ptr)
+			topicLabel.set_text(topic);
+	}
+
 	void MainBox::focusView(void *ptr) {
+		if (topics.count(ptr) != 0)
+			topicLabel.set_text(topics.at(ptr));
+		else
+			topicLabel.set_text("");
 		activeView = ptr;
-		topicLabel.set_text("");
 		scrolled.set_child(getLineView(ptr));
 		if (serverRows.count(ptr) != 0)
 			serverTree.get_selection()->select(serverRows.at(ptr));
 		else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
-			topicLabel.set_text(std::string(channel->topic));
+			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
 			serverTree.get_selection()->select(channelRows.at(channel));
 		}
 	}

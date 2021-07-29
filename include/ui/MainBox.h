@@ -30,6 +30,7 @@ namespace Reden {
 			void eraseChannel(PingPong::Channel *);
 			void addStatus(const std::string &);
 			LineView & getLineView(void *ptr);
+			void setTopic(void *ptr, const std::string &);
 
 		private:
 			struct ServerColumns: public Gtk::TreeModelColumnRecord {
@@ -47,7 +48,7 @@ namespace Reden {
 			Glib::RefPtr<Gtk::TreeStore> serverModel, userModel;
 			Gtk::Separator leftSeparator, rightSeparator;
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
-			Gtk::Label topicLabel;
+			Gtk::Label topicLabel {"", Gtk::Align::START};
 			Gtk::ScrolledWindow scrolled;
 			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;
@@ -57,6 +58,7 @@ namespace Reden {
 			std::unordered_map<void *, Gtk::TreeModel::iterator> serverRows;
 			std::unordered_map<PingPong::Channel *, Gtk::TreeModel::iterator> channelRows;
 			std::unordered_map<void *, LineView> views;
+			std::unordered_map<void *, Glib::ustring> topics;
 
 			void addStatusRow();
 			void focusView(void *);
