@@ -35,13 +35,11 @@ namespace Reden {
 		chatEntry.add_css_class("unrounded");
 		scrolled.set_vexpand(true);
 		scrolled.set_child(chatGrid);
-		chatEntry.signal_activate().connect([this]() {
-			if (parent.irc->activeServer) {
+		chatEntry.signal_activate().connect([this] {
+			if (parent.irc->activeServer)
 				parent.irc->activeServer->quote(chatEntry.get_text());
-			} else {
-				DBG("No active server.");
-			}
-
+			else
+				std::cerr << "No active server.\n";
 			chatEntry.set_text("");
 		});
 		chatEntry.grab_focus();

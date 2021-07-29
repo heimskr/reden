@@ -52,12 +52,13 @@ namespace Reden {
 
 		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
 			if (ev->isChannel()) {
+				const std::string content = ev->content;
 				auto channel = ev->server->getChannel(ev->where);
-				std::string str = "<";
-				str += static_cast<char>(channel->getHats(ev->speaker).highest());
-				str += ev->speaker->name + "> " + ev->content;
-				queue([this, channel, str] {
-					mainBox.getLineView(channel.get()) += str;
+				std::string name;
+				name += static_cast<char>(channel->getHats(ev->speaker).highest());
+				name += ev->speaker->name;
+				queue([this, content, channel, name] {
+					mainBox.getLineView(channel.get()).addMessage(name, content);
 				});
 			}
 		});

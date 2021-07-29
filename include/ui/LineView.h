@@ -1,19 +1,24 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <ctime>
 #include <deque>
 #include <memory>
 #include <vector>
 
 namespace Reden {
-	class LineView: public Gtk::Grid {
+	class LineView: public Gtk::TextView {
 		public:
 			LineView();
 
-			LineView & operator+=(const std::string &);
+			LineView & operator+=(const std::string &text);
+			LineView & addMessage(const std::string &name, const std::string &message);
 
 		private:
-			std::deque<std::vector<std::unique_ptr<Gtk::Widget>>> widgets;
-			int row = 0;
+			static std::string makeTimestamp(time_t);
+			static std::string makeTimestamp();
+
+			void addNewline();
+			void addTime();
 	};
 }
