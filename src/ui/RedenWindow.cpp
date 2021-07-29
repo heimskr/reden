@@ -133,8 +133,11 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::ModeEvent>([this](PingPong::ModeEvent *ev) {
+			auto who = ev->who;
+			auto modeset = ev->modeSet;
 			if (auto channel = ev->getChannel(ev->server))
-				queue([this, channel] {
+				queue([this, channel, who, modeset] {
+					mainBox[channel].mode(channel, who, modeset);
 					mainBox.updateChannel(*channel);
 				});
 		});
@@ -159,9 +162,7 @@ namespace Reden {
 			if (ev->isChannel()) {
 				const std::string content = ev->content;
 				auto channel = ev->server->getChannel(ev->where);
-				std::string name;
-				name += static_cast<char>(channel->getHats(ev->speaker).highest());
-				name += ev->speaker->name;
+				const std::string name = channel->withHat(ev->speaker);
 				queue([this, content, channel, name] {
 					mainBox[channel].addMessage(name, content);
 				});

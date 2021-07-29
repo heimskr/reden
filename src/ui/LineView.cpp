@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "ui/LineView.h"
+#include "pingpong/core/Channel.h"
 
 namespace Reden {
 	LineView::LineView(): Gtk::TextView() {
@@ -18,11 +19,14 @@ namespace Reden {
 		  plainTag = buffer.create_tag("plain");
 		 actionTag = buffer.create_tag("action");
 		channelTag = buffer.create_tag("channel");
+		  modesTag = buffer.create_tag("modes");
+		   userTag = buffer.create_tag("user"); // For things like mode lines
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
 		   nameTag->property_weight()     = nameTag->property_weight() * 2;
 		 actionTag->property_weight()     = actionTag->property_weight() * 2;
 		channelTag->property_weight()     = channelTag->property_weight() * 2;
+		   userTag->property_weight()     = userTag->property_weight() * 2;
 	}
 
 	LineView & LineView::operator+=(const std::string &text) {
@@ -35,14 +39,26 @@ namespace Reden {
 	}
 
 	LineView & LineView::joined(const std::string &name, const std::string &channel) {
-		start().append("*", "action").append(" ").append(name, "name").append(" joined ");
-		return append(channel, "channel");
+		return start().addStar().append(name, "name").append(" joined ").append(channel, "channel");
+	}
+
+	LineView & LineView::mode(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
+	                          const PingPong::ModeSet &modeset) {
+		start().addStar();
+		if (!who) {
+			append("Mode" + std::string(modeset.count() == 1? "" : "s") + " set: ");
+		} else {
+			append(channel->withHat(who), "user");
+			append(" set mode" + std::string(modeset.count() == 1? "" : "s") + " ");
+		}
+		append(modeset.modeString(), "modes");
+		if (!modeset.extra.empty())
+			append(" on ").append(modeset.extra, "user");
+		return *this;
 	}
 
 	LineView & LineView::start() {
-		addNewline();
-		addTime();
-		return *this;
+		return addNewline().addTime();
 	}
 
 	LineView & LineView::append(const std::string &text, const std::string &tag_name) {
@@ -55,16 +71,23 @@ namespace Reden {
 		return *this;
 	}
 
-	void LineView::addNewline() {
+	LineView & LineView::addNewline() {
 		auto &buffer = *get_buffer();
 		if (buffer.size() != 0)
 			buffer.insert(buffer.end(), "\n");
+		return *this;
 	}
 
-	void LineView::addTime() {
+	LineView & LineView::addTime() {
 		auto &buffer = *get_buffer();
 		buffer.insert_with_tag(buffer.end(), makeTimestamp(), "timestamp");
 		buffer.insert(buffer.end(), " ");
+		return *this;
+	}
+
+	LineView & LineView::addStar() {
+		append("*", "action").append(" ");
+		return *this;
 	}
 
 	std::string LineView::makeTimestamp(time_t now) {

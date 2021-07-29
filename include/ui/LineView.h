@@ -6,6 +6,13 @@
 #include <memory>
 #include <vector>
 
+#include "pingpong/core/ModeSet.h"
+
+namespace PingPong {
+	class Channel;
+	class User;
+}
+
 namespace Reden {
 	class LineView: public Gtk::TextView {
 		public:
@@ -14,17 +21,20 @@ namespace Reden {
 			LineView & operator+=(const std::string &text);
 			LineView & addMessage(const std::string &name, const std::string &message);
 			LineView & joined(const std::string &name, const std::string &channel);
+			LineView & mode(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
+			                const PingPong::ModeSet &);
 
 		private:
-			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag;
+			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
+			                           modesTag, userTag;
 			static std::string makeTimestamp(time_t);
 			static std::string makeTimestamp();
-
 
 			LineView & start();
 			LineView & append(const std::string &text, const std::string &tag_name);
 			LineView & append(const std::string &text);
-			void addNewline();
-			void addTime();
+			LineView & addNewline();
+			LineView & addTime();
+			LineView & addStar();
 	};
 }
