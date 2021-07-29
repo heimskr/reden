@@ -176,16 +176,16 @@ namespace Reden {
 		activeView = ptr;
 		scrolled.set_child(getLineView(ptr));
 		userModel->clear();
-		if (serverRows.count(ptr) != 0)
+		if (serverRows.count(ptr) != 0) {
 			serverTree.get_selection()->select(serverRows.at(ptr));
-		else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
+			parent.irc->activeServer = reinterpret_cast<PingPong::Server *>(ptr);
+		} else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
 			serverTree.get_selection()->select(channelRows.at(channel));
 			userRows.clear();
 			userModel->clear();
 			for (const std::string &user: userSets[channel]) {
-				std::cout << "Appending " << user << " from focusView\n";
 				auto row = userModel->append();
 				userRows[user] = row;
 				(*row)[columns.name] = static_cast<char>(channel->getHats(user).highest()) + user;
