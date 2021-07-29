@@ -24,7 +24,7 @@ namespace Reden {
 		append(chatBox);
 		append(rightSeparator);
 		append(userTree);
-		chatBox.append(topic);
+		chatBox.append(topicLabel);
 		chatBox.append(scrolled);
 		chatBox.append(chatEntry);
 		chatEntry.add_css_class("unrounded");
@@ -106,11 +106,16 @@ namespace Reden {
 	}
 
 	void MainBox::focusView(void *ptr) {
+		activeView = ptr;
+		topicLabel.set_text("");
 		scrolled.set_child(getLineView(ptr));
 		if (serverRows.count(ptr) != 0)
 			serverTree.get_selection()->select(serverRows.at(ptr));
-		else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0)
-			serverTree.get_selection()->select(channelRows.at(reinterpret_cast<PingPong::Channel *>(ptr)));
+		else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
+			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
+			topicLabel.set_text(std::string(channel->topic));
+			serverTree.get_selection()->select(channelRows.at(channel));
+		}
 	}
 
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {

@@ -29,7 +29,7 @@ libpingpong.a: $(PPOBJ)
 
 $(OUTPUT): libpingpong.a $(OBJECTS)
 	@ printf "\e[2m[\e[22;36mld\e[39;2m]\e[22m $@\n"
-	$(COMPILER) $(filter-out libpingpong.a,$^) -o $@ $(LDFLAGS)
+	@ $(COMPILER) $(filter-out libpingpong.a,$^) -o $@ $(LDFLAGS)
 
 %.o: %.cpp
 	@ printf "\e[2m[\e[22;32mcc\e[39;2m]\e[22m $< \e[2m$(BUILDFLAGS)\e[22m\n"

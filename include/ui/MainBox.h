@@ -21,6 +21,7 @@ namespace Reden {
 		public:
 			MainBox() = delete;
 			MainBox(RedenWindow &);
+			void *activeView = nullptr;
 
 			void focusEntry();
 			void addServer(PingPong::Server *, bool focus = false);
@@ -46,7 +47,7 @@ namespace Reden {
 			Glib::RefPtr<Gtk::TreeStore> serverModel, userModel;
 			Gtk::Separator leftSeparator, rightSeparator;
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
-			Gtk::Label topic;
+			Gtk::Label topicLabel;
 			Gtk::ScrolledWindow scrolled;
 			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;

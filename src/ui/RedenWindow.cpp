@@ -32,13 +32,21 @@ namespace Reden {
 		irc->init();
 
 		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
-			if (ev->who->isSelf())
-				mainBox.addChannel(ev->channel.get(), true);
+			if (ev->who->isSelf()) {
+				auto channel = ev->channel;
+				queue([this, channel] {
+					mainBox.addChannel(channel.get(), true);
+				});
+			}
 		});
 
 		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
-			if (ev->who->isSelf())
-				mainBox.eraseChannel(ev->channel.get());
+			if (ev->who->isSelf()) {
+				auto channel = ev->channel;
+				queue([this, channel] {
+					mainBox.eraseChannel(channel.get());
+				});
+			}
 		});
 
 		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
@@ -47,20 +55,30 @@ namespace Reden {
 				std::string str = "<";
 				str += static_cast<char>(channel->getHats(ev->speaker).highest());
 				str += ev->speaker->name + "> " + ev->content;
-				mainBox.getLineView(channel.get()) += str;
+				queue([this, channel, str] {
+					mainBox.getLineView(channel.get()) += str;
+				});
 			}
 		});
 
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
 			switch (ev->server->getStatus()) {
-				case PingPong::Server::Stage::Ready:
-					mainBox.addServer(ev->server, true);
-					mainBox.addStatus("Connected to " + ev->server->id + " (" + ev->server->hostname + ":"
-						+ std::to_string(ev->server->port) + ")");
+				case PingPong::Server::Stage::Ready: {
+					auto server = ev->server;
+					queue([this, server] {
+						mainBox.addServer(server, true);
+						mainBox.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
+							+ std::to_string(server->port) + ")");
+					});
 					break;
-				case PingPong::Server::Stage::Dead:
-					mainBox.eraseServer(ev->server);
+				}
+				case PingPong::Server::Stage::Dead: {
+					auto server = ev->server;
+					queue([this, server] {
+						mainBox.eraseServer(server);
+					});
 					break;
+				}
 				default:
 					break;
 			}
@@ -81,6 +99,13 @@ namespace Reden {
 			});
 			connect->show();
 		}));
+
+		functionQueueDispatcher.connect([this] {
+			auto lock = std::unique_lock(functionQueueMutex);
+			for (auto fn: functionQueue)
+				fn();
+			functionQueue.clear();
+		});
 
 		signal_hide().connect([this] {
 			if (irc) {
@@ -109,6 +134,14 @@ namespace Reden {
 			fn();
 			return false;
 		});
+	}
+
+	void RedenWindow::queue(std::function<void()> fn) {
+		{
+			auto lock = std::unique_lock(functionQueueMutex);
+			functionQueue.push_back(fn);
+		}
+		functionQueueDispatcher.emit();
 	}
 
 	void RedenWindow::alert(const Glib::ustring &message, Gtk::MessageType type, bool modal, bool use_markup) {
