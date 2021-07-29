@@ -13,6 +13,8 @@ namespace Reden {
 		portEntry.set_placeholder_text("Port");
 		nickEntry.set_placeholder_text("Nickname");
 		portEntry.set_text("6667");
+		hostEntry.set_text("localhost");
+		nickEntry.set_text("reden");
 		area.append(hostEntry);
 		area.append(portEntry);
 		area.append(nickEntry);
