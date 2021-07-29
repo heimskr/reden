@@ -11,12 +11,15 @@ namespace Reden {
 		serverTree.set_model(serverModel);
 		serverTree.set_vexpand(true);
 		serverTree.set_headers_visible(false);
+		serverTree.set_activate_on_single_click(true);
+		serverTree.set_size_request(200, -1);
+		serverTree.set_can_focus(false);
 		appendColumn(serverTree, "Name", serverColumns.name);
 		chatBox.set_expand(true);
 		userTree.set_vexpand(true);
-		serverTree.set_size_request(200, -1);
+		userTree.set_headers_visible(false);
+		userTree.set_activate_on_single_click(true);
 		userTree.set_size_request(200, -1);
-		serverTree.set_can_focus(false);
 		userTree.set_can_focus(false);
 		append(serverTree);
 		append(leftSeparator);
