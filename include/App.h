@@ -10,6 +10,8 @@ namespace Reden {
 			Glib::RefPtr<Gtk::Builder> builder;
 
 			static Glib::RefPtr<App> create();
+			static const char * getText(const std::string &path, gsize &);
+			static const char * getText(const std::string &path);
 
 			void on_startup() override;
 			void on_activate() override;

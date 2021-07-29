@@ -35,4 +35,13 @@ namespace Reden {
 	void App::on_hide_window(Gtk::Window *window) {
 		delete window;
 	}
+
+	const char * App::getText(const std::string &path, gsize &size) {
+		return reinterpret_cast<const char *>(Gio::Resource::lookup_data_global(path)->get_data(size));
+	}
+
+	const char * App::getText(const std::string &path) {
+		gsize size;
+		return getText(path, size);
+	}
 }

@@ -8,6 +8,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+#include "App.h"
+#include "FS.h"
 #include "ui/ConnectDialog.h"
 #include "ui/RedenWindow.h"
 #include "pingpong/events/Join.h"
@@ -27,7 +29,15 @@ namespace Reden {
 		set_titlebar(*header);
 
 		cssProvider = Gtk::CssProvider::create();
-		cssProvider->load_from_resource("/com/heimskr/reden/style.css");
+		if (FS::fileExists("custom.css")) {
+			try {
+				cssProvider->load_from_data(App::getText("/com/heimskr/reden/style.css") + std::string("\n")
+					+ FS::readFile("custom.css"));
+			} catch (const std::exception &) {
+				cssProvider->load_from_resource("/com/heimskr/reden/style.css");
+			}
+		} else
+			cssProvider->load_from_resource("/com/heimskr/reden/style.css");
 		Gtk::StyleContext::add_provider_for_display(Gdk::Display::get_default(), cssProvider,
 			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 

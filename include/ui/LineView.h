@@ -21,7 +21,7 @@ namespace Reden {
 			static std::string makeTimestamp();
 
 
-			Gtk::TextBuffer & start();
+			LineView & start();
 			LineView & append(const std::string &text, const std::string &tag_name);
 			LineView & append(const std::string &text);
 			void addNewline();

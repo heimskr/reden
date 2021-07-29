@@ -26,26 +26,23 @@ namespace Reden {
 	}
 
 	LineView & LineView::operator+=(const std::string &text) {
-		start();
-		return append(text, "plain");
+		return start().append(text, "plain");
 	}
 
 	LineView & LineView::addMessage(const std::string &name, const std::string &message) {
-		start();
-		append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
+		start().append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
 		return append(message, "message");
 	}
 
 	LineView & LineView::joined(const std::string &name, const std::string &channel) {
-		start();
-		return append("*", "action").append(" ").append(name, "name").append(" joined ").append(channel, "channel");
+		start().append("*", "action").append(" ").append(name, "name").append(" joined ");
+		return append(channel, "channel");
 	}
 
-	Gtk::TextBuffer & LineView::start() {
-		auto &buffer = *get_buffer();
+	LineView & LineView::start() {
 		addNewline();
 		addTime();
-		return buffer;
+		return *this;
 	}
 
 	LineView & LineView::append(const std::string &text, const std::string &tag_name) {
