@@ -2,7 +2,8 @@
 /reden
 /.dep
 .vscode
-prefs.ini
-libpingpong.a
-src/resources.cpp
-.log
+/prefs.ini
+/libpingpong.a
+/src/resources.cpp
+/.log
+/custom.css
