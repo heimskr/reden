@@ -11,7 +11,9 @@ namespace Reden {
 		set_cursor_visible(false);
 		auto time_tag = get_buffer()->create_tag("timestamp");
 		auto bracket_tag = get_buffer()->create_tag("name_bracket");
+		bracket_tag->property_foreground() = "gray";
 		auto name_tag = get_buffer()->create_tag("name");
+		name_tag->property_weight() = name_tag->property_weight() * 2;
 		auto message_tag = get_buffer()->create_tag("message");
 		auto plain_tag = get_buffer()->create_tag("plain");
 	}
