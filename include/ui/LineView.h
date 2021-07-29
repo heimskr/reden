@@ -16,8 +16,10 @@ namespace Reden {
 			LineView & joined(const std::string &name, const std::string &channel);
 
 		private:
+			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag;
 			static std::string makeTimestamp(time_t);
 			static std::string makeTimestamp();
+
 
 			Gtk::TextBuffer & start();
 			LineView & append(const std::string &text, const std::string &tag_name);

@@ -9,19 +9,20 @@ namespace Reden {
 		add_css_class("lineview");
 		set_editable(false);
 		set_cursor_visible(false);
+		set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
 		auto &buffer = *get_buffer();
-		auto    time_tag = buffer.create_tag("timestamp");
-		auto bracket_tag = buffer.create_tag("name_bracket");
-		auto    name_tag = buffer.create_tag("name");
-		auto message_tag = buffer.create_tag("message");
-		auto   plain_tag = buffer.create_tag("plain");
-		auto  action_tag = buffer.create_tag("action");
-		auto channel_tag = buffer.create_tag("channel");
-		bracket_tag->property_foreground() = "gray";
-		   time_tag->property_foreground() = "gray";
-		   name_tag->property_weight()     = name_tag->property_weight() * 2;
-		 action_tag->property_weight()     = action_tag->property_weight() * 2;
-		channel_tag->property_weight()     = channel_tag->property_weight() * 2;
+		   timeTag = buffer.create_tag("timestamp");
+		bracketTag = buffer.create_tag("name_bracket");
+		   nameTag = buffer.create_tag("name");
+		messageTag = buffer.create_tag("message");
+		  plainTag = buffer.create_tag("plain");
+		 actionTag = buffer.create_tag("action");
+		channelTag = buffer.create_tag("channel");
+		bracketTag->property_foreground() = "gray";
+		   timeTag->property_foreground() = "gray";
+		   nameTag->property_weight()     = nameTag->property_weight() * 2;
+		 actionTag->property_weight()     = actionTag->property_weight() * 2;
+		channelTag->property_weight()     = channelTag->property_weight() * 2;
 	}
 
 	LineView & LineView::operator+=(const std::string &text) {
