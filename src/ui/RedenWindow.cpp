@@ -49,6 +49,7 @@ namespace Reden {
 			auto channel = ev->channel;
 			auto name = ev->who->name;
 			queue([this, channel, name, self] {
+				std::cout << "NamesUpdatedEvent\n";
 				if (self)
 					mainBox.addChannel(channel.get(), true);
 				mainBox[channel].joined(name, channel->name);
@@ -59,6 +60,7 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
 			auto channel = ev->channel;
 			queue([this, channel] {
+				std::cout << "NamesUpdatedEvent\n";
 				mainBox.updateChannel(*channel);
 			});
 		});

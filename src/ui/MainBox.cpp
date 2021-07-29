@@ -111,14 +111,13 @@ namespace Reden {
 		auto lock = channel.lockUsers();
 		userSets[&channel].clear();
 		if (activeView == &channel) {
-			std::cout << "is activeView\n";
 			bool sort = false;
 			for (auto &user: channel.users) {
 				const auto highest = channel.getHats(user).highest();
 				if (highest == PingPong::Hat::None)
 					userSets[&channel].insert(user->name);
 				else
-					userSets[&channel].insert(static_cast<char>(highest) + user->name);
+					userSets[&channel].insert(user->name);
 				if (userRows.count(user->name) == 0) {
 					auto row = userModel->append();
 					userRows.emplace(user->name, row);
@@ -137,16 +136,9 @@ namespace Reden {
 
 			if (sort)
 				userModel->set_sort_column(columns.name, Gtk::SortType::ASCENDING);
-		} else {
-			std::cout << "isn't activeView\n";
-			for (auto &user: channel.users) {
-				const auto highest = channel.getHats(user).highest();
-				if (highest == PingPong::Hat::None)
-					userSets[&channel].insert(user->name);
-				else
-					userSets[&channel].insert(static_cast<char>(highest) + user->name);
-			}
-		}
+		} else
+			for (auto &user: channel.users)
+				userSets[&channel].insert(user->name);
 	}
 
 	LineView & MainBox::getLineView(void *ptr) {
@@ -192,9 +184,10 @@ namespace Reden {
 			userRows.clear();
 			userModel->clear();
 			for (const std::string &user: userSets[channel]) {
+				std::cout << "Appending " << user << " from focusView\n";
 				auto row = userModel->append();
 				userRows[user] = row;
-				(*row)[columns.name] = user;
+				(*row)[columns.name] = static_cast<char>(channel->getHats(user).highest()) + user;
 				(*row)[columns.pointer] = channel;
 			}
 		}
