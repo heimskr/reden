@@ -9,32 +9,51 @@ namespace Reden {
 		add_css_class("lineview");
 		set_editable(false);
 		set_cursor_visible(false);
-		auto time_tag = get_buffer()->create_tag("timestamp");
-		auto bracket_tag = get_buffer()->create_tag("name_bracket");
+		auto &buffer = *get_buffer();
+		auto    time_tag = buffer.create_tag("timestamp");
+		auto bracket_tag = buffer.create_tag("name_bracket");
+		auto    name_tag = buffer.create_tag("name");
+		auto message_tag = buffer.create_tag("message");
+		auto   plain_tag = buffer.create_tag("plain");
+		auto  action_tag = buffer.create_tag("action");
+		auto channel_tag = buffer.create_tag("channel");
 		bracket_tag->property_foreground() = "gray";
-		auto name_tag = get_buffer()->create_tag("name");
-		name_tag->property_weight() = name_tag->property_weight() * 2;
-		auto message_tag = get_buffer()->create_tag("message");
-		auto plain_tag = get_buffer()->create_tag("plain");
+		   time_tag->property_foreground() = "gray";
+		   name_tag->property_weight()     = name_tag->property_weight() * 2;
+		 action_tag->property_weight()     = action_tag->property_weight() * 2;
+		channel_tag->property_weight()     = channel_tag->property_weight() * 2;
 	}
 
 	LineView & LineView::operator+=(const std::string &text) {
-		auto &buffer = *get_buffer();
-		addNewline();
-		addTime();
-		buffer.insert_with_tag(buffer.end(), text, "plain");
-		return *this;
+		start();
+		return append(text, "plain");
 	}
 
 	LineView & LineView::addMessage(const std::string &name, const std::string &message) {
+		start();
+		append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
+		return append(message, "message");
+	}
+
+	LineView & LineView::joined(const std::string &name, const std::string &channel) {
+		start();
+		return append("*", "action").append(" ").append(name, "name").append(" joined ").append(channel, "channel");
+	}
+
+	Gtk::TextBuffer & LineView::start() {
 		auto &buffer = *get_buffer();
 		addNewline();
 		addTime();
-		buffer.insert_with_tag(buffer.end(), "<", "name_bracket");
-		buffer.insert_with_tag(buffer.end(), name, "name");
-		buffer.insert_with_tag(buffer.end(), ">", "name_bracket");
-		buffer.insert(buffer.end(), " ");
-		buffer.insert_with_tag(buffer.end(), message, "message");
+		return buffer;
+	}
+
+	LineView & LineView::append(const std::string &text, const std::string &tag_name) {
+		get_buffer()->insert_with_tag(get_buffer()->end(), text, tag_name);
+		return *this;
+	}
+
+	LineView & LineView::append(const std::string &text) {
+		get_buffer()->insert(get_buffer()->end(), text);
 		return *this;
 	}
 

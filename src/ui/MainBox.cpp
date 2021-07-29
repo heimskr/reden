@@ -6,7 +6,6 @@
 #include "pingpong/core/Server.h"
 
 namespace Reden {
-
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
 		serverModel = Gtk::TreeStore::create(serverColumns);
 		serverTree.set_model(serverModel);
@@ -85,16 +84,14 @@ namespace Reden {
 	void MainBox::eraseServer(PingPong::Server *server) {
 		if (serverRows.count(server) == 0)
 			return;
-		auto iter = serverRows.at(server);
-		serverModel->erase(iter);
+		serverModel->erase(serverRows.at(server));
 		serverRows.erase(server);
 	}
 
 	void MainBox::eraseChannel(PingPong::Channel *channel) {
 		if (channelRows.count(channel) == 0)
 			return;
-		auto iter = channelRows.at(channel);
-		serverModel->erase(iter);
+		serverModel->erase(channelRows.at(channel));
 		channelRows.erase(channel);
 	}
 
@@ -104,7 +101,7 @@ namespace Reden {
 
 	LineView & MainBox::getLineView(void *ptr) {
 		if (views.count(ptr) == 0)
-			views.emplace(ptr, LineView());
+			return views.emplace(ptr, LineView()).first->second;
 		return views.at(ptr);
 	}
 

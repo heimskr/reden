@@ -35,8 +35,10 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
 			if (ev->who->isSelf()) {
 				auto channel = ev->channel;
-				queue([this, channel] {
+				auto name = ev->who->name;
+				queue([this, channel, name] {
 					mainBox.addChannel(channel.get(), true);
+					mainBox.getLineView(channel.get()).joined(name, channel->name);
 				});
 			}
 		});
