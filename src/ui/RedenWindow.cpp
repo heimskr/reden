@@ -13,6 +13,7 @@
 #include "ui/ConnectDialog.h"
 #include "ui/RedenWindow.h"
 #include "pingpong/events/Join.h"
+#include "pingpong/events/NamesUpdated.h"
 #include "pingpong/events/Part.h"
 #include "pingpong/events/Privmsg.h"
 #include "pingpong/events/Raw.h"
@@ -44,14 +45,22 @@ namespace Reden {
 		irc->init();
 
 		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
-			if (ev->who->isSelf()) {
-				auto channel = ev->channel;
-				auto name = ev->who->name;
-				queue([this, channel, name] {
+			const bool self = ev->who->isSelf();
+			auto channel = ev->channel;
+			auto name = ev->who->name;
+			queue([this, channel, name, self] {
+				if (self)
 					mainBox.addChannel(channel.get(), true);
-					mainBox[channel].joined(name, channel->name);
-				});
-			}
+				mainBox[channel].joined(name, channel->name);
+				mainBox.updateChannel(*channel);
+			});
+		});
+
+		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
+			auto channel = ev->channel;
+			queue([this, channel] {
+				mainBox.updateChannel(*channel);
+			});
 		});
 
 		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {

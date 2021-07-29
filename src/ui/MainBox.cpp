@@ -7,20 +7,25 @@
 
 namespace Reden {
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
-		serverModel = Gtk::TreeStore::create(serverColumns);
+		serverModel = Gtk::TreeStore::create(columns);
 		serverTree.set_model(serverModel);
 		serverTree.set_vexpand(true);
 		serverTree.set_headers_visible(false);
 		serverTree.set_activate_on_single_click(true);
 		serverTree.set_size_request(200, -1);
 		serverTree.set_can_focus(false);
-		appendColumn(serverTree, "Name", serverColumns.name);
+		serverTree.add_css_class("server-tree");
+		appendColumn(serverTree, "Name", columns.name);
 		chatBox.set_expand(true);
+		userModel = Gtk::ListStore::create(columns);
+		userTree.set_model(userModel);
 		userTree.set_vexpand(true);
 		userTree.set_headers_visible(false);
 		userTree.set_activate_on_single_click(true);
 		userTree.set_size_request(200, -1);
 		userTree.set_can_focus(false);
+		userTree.add_css_class("user-tree");
+		appendColumn(userTree, "Name", columns.name);
 		append(serverTree);
 		append(leftSeparator);
 		append(chatBox);
@@ -51,8 +56,8 @@ namespace Reden {
 
 	void MainBox::addStatusRow() {
 		auto row = serverModel->append();
-		(*row)[serverColumns.name] = "Status";
-		(*row)[serverColumns.pointer] = this;
+		(*row)[columns.name] = "Status";
+		(*row)[columns.pointer] = this;
 		serverRows.emplace(this, row);
 	}
 
@@ -64,8 +69,8 @@ namespace Reden {
 		if (serverRows.count(server) != 0)
 			return;
 		auto row = serverModel->append();
-		(*row)[serverColumns.name] = server->id;
-		(*row)[serverColumns.pointer] = server;
+		(*row)[columns.name] = server->id;
+		(*row)[columns.pointer] = server;
 		serverRows.emplace(server, row);
 		if (focus)
 			focusView(server);
@@ -77,8 +82,8 @@ namespace Reden {
 		auto iter = serverRows.at(channel->server);
 		auto row = serverModel->append(iter->children());
 		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
-		(*row)[serverColumns.name] = channel->name;
-		(*row)[serverColumns.pointer] = channel;
+		(*row)[columns.name] = channel->name;
+		(*row)[columns.pointer] = channel;
 		channelRows.emplace(channel, row);
 		if (focus)
 			focusView(channel);
@@ -100,6 +105,48 @@ namespace Reden {
 
 	void MainBox::addStatus(const std::string &line) {
 		getLineView(this) += line;
+	}
+
+	void MainBox::updateChannel(PingPong::Channel &channel) {
+		auto lock = channel.lockUsers();
+		userSets[&channel].clear();
+		if (activeView == &channel) {
+			std::cout << "is activeView\n";
+			bool sort = false;
+			for (auto &user: channel.users) {
+				const auto highest = channel.getHats(user).highest();
+				if (highest == PingPong::Hat::None)
+					userSets[&channel].insert(user->name);
+				else
+					userSets[&channel].insert(static_cast<char>(highest) + user->name);
+				if (userRows.count(user->name) == 0) {
+					auto row = userModel->append();
+					userRows.emplace(user->name, row);
+					(*row)[columns.name] = channel.withHat(user, true);
+					(*row)[columns.pointer] = &channel;
+					sort = true;
+				} else {
+					auto row = userRows.at(user->name);
+					Glib::ustring new_name = channel.withHat(user, true);
+					if (Glib::ustring((*row)[columns.name]) != new_name) {
+						(*row)[columns.name] = new_name;
+						sort = true;
+					}
+				}
+			}
+
+			if (sort)
+				userModel->set_sort_column(columns.name, Gtk::SortType::ASCENDING);
+		} else {
+			std::cout << "isn't activeView\n";
+			for (auto &user: channel.users) {
+				const auto highest = channel.getHats(user).highest();
+				if (highest == PingPong::Hat::None)
+					userSets[&channel].insert(user->name);
+				else
+					userSets[&channel].insert(static_cast<char>(highest) + user->name);
+			}
+		}
 	}
 
 	LineView & MainBox::getLineView(void *ptr) {
@@ -135,17 +182,26 @@ namespace Reden {
 			topicLabel.set_text("");
 		activeView = ptr;
 		scrolled.set_child(getLineView(ptr));
+		userModel->clear();
 		if (serverRows.count(ptr) != 0)
 			serverTree.get_selection()->select(serverRows.at(ptr));
 		else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
 			serverTree.get_selection()->select(channelRows.at(channel));
+			userRows.clear();
+			userModel->clear();
+			for (const std::string &user: userSets[channel]) {
+				auto row = userModel->append();
+				userRows[user] = row;
+				(*row)[columns.name] = user;
+				(*row)[columns.pointer] = channel;
+			}
 		}
 	}
 
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
 		if (auto iter = serverModel->get_iter(path))
-			focusView((*iter)[serverColumns.pointer]);
+			focusView((*iter)[columns.pointer]);
 	}
 }

@@ -4,6 +4,6 @@
 	border-right: none;
 }
 
-.lineview {
+.lineview, .user-tree {
 	font-family: monospace;
 }
