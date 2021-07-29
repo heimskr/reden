@@ -37,5 +37,7 @@ namespace Reden {
 			std::list<std::function<void()>> functionQueue;
 			std::mutex functionQueueMutex;
 			Glib::Dispatcher functionQueueDispatcher;
+
+			void addListeners();
 	};
 }

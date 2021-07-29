@@ -13,6 +13,7 @@
 #include "ui/ConnectDialog.h"
 #include "ui/RedenWindow.h"
 #include "pingpong/events/Join.h"
+#include "pingpong/events/Mode.h"
 #include "pingpong/events/NamesUpdated.h"
 #include "pingpong/events/Part.h"
 #include "pingpong/events/Privmsg.h"
@@ -44,89 +45,7 @@ namespace Reden {
 
 		irc->init();
 
-		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
-			const bool self = ev->who->isSelf();
-			auto channel = ev->channel;
-			auto name = ev->who->name;
-			queue([this, channel, name, self] {
-				std::cout << "NamesUpdatedEvent\n";
-				if (self)
-					mainBox.addChannel(channel.get(), true);
-				mainBox[channel].joined(name, channel->name);
-				mainBox.updateChannel(*channel);
-			});
-		});
-
-		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
-			auto channel = ev->channel;
-			queue([this, channel] {
-				std::cout << "NamesUpdatedEvent\n";
-				mainBox.updateChannel(*channel);
-			});
-		});
-
-		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
-			if (ev->who->isSelf()) {
-				auto channel = ev->channel;
-				queue([this, channel] {
-					mainBox.eraseChannel(channel.get());
-				});
-			}
-		});
-
-		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
-			if (ev->isChannel()) {
-				const std::string content = ev->content;
-				auto channel = ev->server->getChannel(ev->where);
-				std::string name;
-				name += static_cast<char>(channel->getHats(ev->speaker).highest());
-				name += ev->speaker->name;
-				queue([this, content, channel, name] {
-					mainBox[channel].addMessage(name, content);
-				});
-			}
-		});
-
-		PingPong::Events::listen<PingPong::RawInEvent>([this](PingPong::RawInEvent *ev) {
-			auto server = ev->server;
-			auto raw = ev->rawIn;
-			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
-				raw.pop_back();
-			queue([this, server, raw] {
-				mainBox.addServer(server, false);
-				mainBox[server] += raw;
-			});
-		});
-
-		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
-			switch (ev->server->getStatus()) {
-				case PingPong::Server::Stage::Ready: {
-					auto server = ev->server;
-					queue([this, server] {
-						mainBox.addServer(server, true);
-						mainBox.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
-							+ std::to_string(server->port) + ")");
-					});
-					break;
-				}
-				case PingPong::Server::Stage::Dead: {
-					auto server = ev->server;
-					queue([this, server] {
-						mainBox.eraseServer(server);
-					});
-					break;
-				}
-				default:
-					break;
-			}
-		});
-
-		PingPong::Events::listen<PingPong::TopicEvent>([this](PingPong::TopicEvent *ev) {
-			auto channel = ev->channel;
-			queue([this, channel] {
-				mainBox.setTopic(channel.get(), std::string(channel->topic));
-			});
-		});
+		addListeners();
 
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {
 			auto *connect = new ConnectDialog("Connect", *this, true);
@@ -198,5 +117,96 @@ namespace Reden {
 
 	void RedenWindow::error(const Glib::ustring &message, bool modal, bool use_markup) {
 		alert(message, Gtk::MessageType::ERROR, modal, use_markup);
+	}
+
+	void RedenWindow::addListeners() {
+		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
+			const bool self = ev->who->isSelf();
+			auto channel = ev->channel;
+			auto name = ev->who->name;
+			queue([this, channel, name, self] {
+				if (self)
+					mainBox.addChannel(channel.get(), true);
+				mainBox[channel].joined(name, channel->name);
+				mainBox.updateChannel(*channel);
+			});
+		});
+
+		PingPong::Events::listen<PingPong::ModeEvent>([this](PingPong::ModeEvent *ev) {
+			if (auto channel = ev->getChannel(ev->server))
+				queue([this, channel] {
+					mainBox.updateChannel(*channel);
+				});
+		});
+
+		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
+			auto channel = ev->channel;
+			queue([this, channel] {
+				mainBox.updateChannel(*channel);
+			});
+		});
+
+		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
+			if (ev->who->isSelf()) {
+				auto channel = ev->channel;
+				queue([this, channel] {
+					mainBox.eraseChannel(channel.get());
+				});
+			}
+		});
+
+		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
+			if (ev->isChannel()) {
+				const std::string content = ev->content;
+				auto channel = ev->server->getChannel(ev->where);
+				std::string name;
+				name += static_cast<char>(channel->getHats(ev->speaker).highest());
+				name += ev->speaker->name;
+				queue([this, content, channel, name] {
+					mainBox[channel].addMessage(name, content);
+				});
+			}
+		});
+
+		PingPong::Events::listen<PingPong::RawInEvent>([this](PingPong::RawInEvent *ev) {
+			auto server = ev->server;
+			auto raw = ev->rawIn;
+			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
+				raw.pop_back();
+			queue([this, server, raw] {
+				mainBox.addServer(server, false);
+				mainBox[server] += raw;
+			});
+		});
+
+		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
+			switch (ev->server->getStatus()) {
+				case PingPong::Server::Stage::Ready: {
+					auto server = ev->server;
+					queue([this, server] {
+						mainBox.addServer(server, true);
+						mainBox.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
+							+ std::to_string(server->port) + ")");
+					});
+					break;
+				}
+				case PingPong::Server::Stage::Dead: {
+					auto server = ev->server;
+					queue([this, server] {
+						mainBox.eraseServer(server);
+					});
+					break;
+				}
+				default:
+					break;
+			}
+		});
+
+		PingPong::Events::listen<PingPong::TopicEvent>([this](PingPong::TopicEvent *ev) {
+			auto channel = ev->channel;
+			queue([this, channel] {
+				mainBox.setTopic(channel.get(), std::string(channel->topic));
+			});
+		});
 	}
 }
