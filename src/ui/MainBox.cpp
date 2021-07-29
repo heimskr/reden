@@ -18,6 +18,7 @@ namespace Reden {
 		appendColumn(serverTree, "Name", columns.name);
 		chatBox.set_expand(true);
 		userModel = Gtk::ListStore::create(columns);
+		userModel->set_sort_func(columns.name, sigc::mem_fun(*this, &MainBox::compareUsers));
 		userTree.set_model(userModel);
 		userTree.set_vexpand(true);
 		userTree.set_headers_visible(false);
@@ -196,5 +197,23 @@ namespace Reden {
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
 		if (auto iter = serverModel->get_iter(path))
 			focusView((*iter)[columns.pointer]);
+	}
+
+	int MainBox::compareUsers(const Gtk::TreeModel::const_iterator &left, const Gtk::TreeModel::const_iterator &right) {
+		const Glib::ustring left_name = (*left)[columns.name], right_name = (*right)[columns.name];
+		static const std::unordered_map<gunichar, int> priority {
+			{'~', 0}, {'&', 1}, {'@', 2}, {'%', 3}, {'+', 4}, {' ', 5}
+		};
+		const int left_priority = priority.at(left_name[0]), right_priority = priority.at(right_name[0]);
+		if (left_priority < right_priority)
+			return -1;
+		if (right_priority < left_priority)
+			return 1;
+		const Glib::ustring left_substr = left_name.substr(1), right_substr = right_name.substr(1);
+		if (left_substr < right_substr)
+			return -1;
+		if (right_substr < left_substr)
+			return 1;
+		return 0;
 	}
 }
