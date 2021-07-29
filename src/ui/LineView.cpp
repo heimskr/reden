@@ -24,6 +24,7 @@ namespace Reden {
 		  topicTag = buffer.create_tag("topic");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
+		   timeTag->property_font() = "Monospace";
 		setBold(nameTag);
 		setBold(actionTag);
 		setBold(channelTag);
