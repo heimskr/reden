@@ -24,7 +24,12 @@ namespace Reden {
 		append(chatBox);
 		append(rightSeparator);
 		append(userTree);
-		chatBox.append(topicLabel);
+		topicScrolled.set_child(topicLabel);
+		topicScrolled.set_margin(0);
+		topicLabel.set_margin_start(5);
+		topicLabel.set_margin_end(5);
+		chatBox.append(topicScrolled);
+		chatBox.append(topicSeparator);
 		chatBox.append(scrolled);
 		chatBox.append(chatEntry);
 		chatEntry.add_css_class("unrounded");
@@ -42,7 +47,6 @@ namespace Reden {
 		chatEntry.grab_focus();
 		addStatusRow();
 		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
-		setMargins(topicLabel, 5);
 	}
 
 	void MainBox::addStatusRow() {

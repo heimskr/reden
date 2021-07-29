@@ -46,10 +46,10 @@ namespace Reden {
 			RedenWindow &parent;
 			Gtk::TreeView serverTree, userTree;
 			Glib::RefPtr<Gtk::TreeStore> serverModel, userModel;
-			Gtk::Separator leftSeparator, rightSeparator;
+			Gtk::Separator leftSeparator, rightSeparator, topicSeparator;
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
 			Gtk::Label topicLabel {"", Gtk::Align::START};
-			Gtk::ScrolledWindow scrolled;
+			Gtk::ScrolledWindow scrolled, topicScrolled;
 			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;
 			ServerColumns serverColumns;
