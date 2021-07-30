@@ -1,7 +1,9 @@
 #include "core/Client.h"
+#include "core/TabCompletion.h"
 #include "ui/RedenWindow.h"
 
 #include "pingpong/commands/Join.h"
+#include "pingpong/commands/Privmsg.h"
 #include "pingpong/core/Server.h"
 
 namespace Reden {
@@ -16,5 +18,22 @@ namespace Reden {
 				PingPong::JoinCommand(server, first).send();
 			});
 		});
+
+		add("me", 1, -1, true, [&](PingPong::Server *, const InputLine &il) {
+			std::cout << "hello. /me\n";
+			const auto &active = window.box.active();
+			if (!active.isAlive()) {
+				std::cout << "oh no\n";
+				return;
+			}
+
+			const Glib::ustring message = "\1ACTION " + il.body + "\1";
+			if (active.isChannel())
+				PingPong::PrivmsgCommand(active.getChannel(), message).send();
+			else if (active.isUser())
+				PingPong::PrivmsgCommand(active.getUser(), message).send();
+			else
+				std::cout << "what!\n";
+		}, &completePlain);
 	}
 }

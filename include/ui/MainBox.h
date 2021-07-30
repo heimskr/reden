@@ -44,6 +44,9 @@ namespace Reden {
 			void log(const Glib::ustring &);
 
 			LineView & getLineView(void *ptr);
+			LineView & getLineView(PingPong::Channel *);
+			LineView & getLineView(PingPong::Server *);
+			LineView & getLineView(PingPong::User *);
 			const LineView & getLineView(void *ptr) const;
 			LineView & operator[](void *ptr);
 			const LineView & operator[](void *ptr) const;
@@ -105,9 +108,18 @@ namespace Reden {
 
 			void addStatusRow();
 			void focusView(void *);
+			void focusView(void *, LineView * &);
 			void serverRowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			int compareUsers(const Gtk::TreeModel::const_iterator &, const Gtk::TreeModel::const_iterator &);
 			bool keyPressed(guint, guint, Gdk::ModifierType);
 			void entryActivated();
+
+			template <typename T>
+			void focusView(void *ptr, T *parent) {
+				LineView *view;
+				focusView(ptr, view);
+				if (!view->parent)
+					view->set(parent);
+			}
 	};
 }

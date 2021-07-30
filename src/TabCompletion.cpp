@@ -93,7 +93,7 @@ namespace Reden {
 		return false;
 	}
 
-	bool completePlain(Client &client_, const InputLine &, Glib::ustring &raw, size_t &cursor, long, long) {
+	bool completePlain(Client &client_, const InputLine &, Glib::ustring &raw, int &cursor, long, long) {
 		client_.completeMessage(raw, cursor, -1);
 		return true;
 	}

@@ -32,16 +32,16 @@ namespace Reden {
 		setBold(topicTag);
 	}
 
-	LineView & LineView::operator+=(const std::string &text) {
+	LineView & LineView::operator+=(const Glib::ustring &text) {
 		return start().append(text, "plain");
 	}
 
-	LineView & LineView::addMessage(const std::string &name, const std::string &message) {
+	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message) {
 		start().append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
 		return append(message, "message");
 	}
 
-	LineView & LineView::joined(const std::string &name, const std::string &channel) {
+	LineView & LineView::joined(const Glib::ustring &name, const Glib::ustring &channel) {
 		return start().addStar().append(name, "name").append(" joined ").append(channel, "channel");
 	}
 
@@ -49,10 +49,10 @@ namespace Reden {
 	                          const PingPong::ModeSet &modeset) {
 		start().addStar();
 		if (!who) {
-			append("Mode" + std::string(modeset.count() == 1? "" : "s") + " set: ");
+			append("Mode" + Glib::ustring(modeset.count() == 1? "" : "s") + " set: ");
 		} else {
 			append(channel->withHat(who), "user");
-			append(" set mode" + std::string(modeset.count() == 1? "" : "s") + " ");
+			append(" set mode" + Glib::ustring(modeset.count() == 1? "" : "s") + " ");
 		}
 		append(modeset.modeString(), "modes");
 		if (!modeset.extra.empty())
@@ -61,7 +61,7 @@ namespace Reden {
 	}
 
 	LineView & LineView::topicChanged(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
-	                                  const std::string &topic) {
+	                                  const Glib::ustring &topic) {
 		start();
 		if (!who)
 			append("Topic for ").append(channel->name, "channel").append(" is ").append(topic, "topic");
@@ -74,16 +74,46 @@ namespace Reden {
 		get_buffer()->set_text("");
 	}
 
+	PingPong::Channel * LineView::getChannel() const {
+		return type == ParentType::Channel? static_cast<PingPong::Channel *>(parent) : nullptr;
+	}
+
+	PingPong::Server * LineView::getServer() const {
+		return type == ParentType::Server? static_cast<PingPong::Server *>(parent) : nullptr;
+	}
+
+	PingPong::User * LineView::getUser() const {
+		return type == ParentType::User? static_cast<PingPong::User *>(parent) : nullptr;
+	}
+
+	LineView & LineView::set(PingPong::Channel *channel) {
+		parent = channel;
+		type = ParentType::Channel;
+		return *this;
+	}
+
+	LineView & LineView::set(PingPong::Server *server) {
+		parent = server;
+		type = ParentType::Server;
+		return *this;
+	}
+
+	LineView & LineView::set(PingPong::User *user) {
+		parent = user;
+		type = ParentType::User;
+		return *this;
+	}
+
 	LineView & LineView::start() {
 		return addNewline().addTime();
 	}
 
-	LineView & LineView::append(const std::string &text, const std::string &tag_name) {
+	LineView & LineView::append(const Glib::ustring &text, const Glib::ustring &tag_name) {
 		get_buffer()->insert_with_tag(get_buffer()->end(), text, tag_name);
 		return *this;
 	}
 
-	LineView & LineView::append(const std::string &text) {
+	LineView & LineView::append(const Glib::ustring &text) {
 		get_buffer()->insert(get_buffer()->end(), text);
 		return *this;
 	}
@@ -107,7 +137,7 @@ namespace Reden {
 		return *this;
 	}
 
-	std::string LineView::makeTimestamp(time_t now) {
+	Glib::ustring LineView::makeTimestamp(time_t now) {
 		std::stringstream ss;
 		tm *times = std::localtime(&now);
 		ss << "[" << std::setfill('0') << std::setw(2) << times->tm_hour << ":" << std::setw(2) << times->tm_min << ":"
@@ -115,7 +145,7 @@ namespace Reden {
 		return ss.str();
 	}
 
-	std::string LineView::makeTimestamp() {
+	Glib::ustring LineView::makeTimestamp() {
 		return makeTimestamp(std::time(nullptr));
 	}
 

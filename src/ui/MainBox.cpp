@@ -81,7 +81,7 @@ namespace Reden {
 		(*row)[columns.pointer] = server;
 		serverRows.emplace(server, row);
 		if (focus)
-			focusView(server);
+			focusView(server, server);
 	}
 
 	void MainBox::addChannel(PingPong::Channel *channel, bool focus) {
@@ -94,7 +94,7 @@ namespace Reden {
 		(*row)[columns.pointer] = channel;
 		channelRows.emplace(channel, row);
 		if (focus)
-			focusView(channel);
+			focusView(channel, channel);
 	}
 
 	void MainBox::eraseServer(PingPong::Server *server) {
@@ -226,12 +226,19 @@ namespace Reden {
 	}
 
 	void MainBox::focusView(void *ptr) {
+		LineView *view;
+		focusView(ptr, view);
+	}
+
+	void MainBox::focusView(void *ptr, LineView * &line_out) {
 		if (topics.count(ptr) != 0)
 			topicLabel.set_text(topics.at(ptr));
 		else
 			topicLabel.set_text("");
 		activeView = ptr;
-		scrolled.set_child(getLineView(ptr));
+		LineView &view = getLineView(ptr);
+		line_out = &view;
+		scrolled.set_child(view);
 		userModel->clear();
 		if (serverRows.count(ptr) != 0) {
 			serverTree.get_selection()->select(serverRows.at(ptr));
