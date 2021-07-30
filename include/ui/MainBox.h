@@ -79,6 +79,7 @@ namespace Reden {
 			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;
 			Columns columns;
+			Glib::RefPtr<Gtk::EventControllerKey> keyController;
 			// I'm using a void pointer here because serverRows can store both PingPong::Server pointers and also a
 			// dummy pointer to this MainBox for the status window.
 			std::unordered_map<void *, Gtk::TreeModel::iterator> serverRows;
@@ -92,5 +93,6 @@ namespace Reden {
 			void focusView(void *);
 			void serverRowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			int compareUsers(const Gtk::TreeModel::const_iterator &, const Gtk::TreeModel::const_iterator &);
+			bool keyPressed(guint, guint, Gdk::ModifierType);
 	};
 }

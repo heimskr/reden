@@ -20,5 +20,10 @@ namespace Reden {
 				};
 			}
 		});
+
+		focusController = Gtk::EventControllerFocus::create();
+		focusController->signal_enter().connect([this] { focused = true;  });
+		focusController->signal_leave().connect([this] { focused = false; });
+		add_controller(focusController);
 	}
 }

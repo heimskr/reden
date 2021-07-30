@@ -53,6 +53,9 @@ namespace Reden {
 		chatEntry.grab_focus();
 		addStatusRow();
 		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
+		keyController = Gtk::EventControllerKey::create();;
+		keyController->signal_key_pressed().connect(sigc::mem_fun(*this, &MainBox::keyPressed), false);
+		add_controller(keyController);
 	}
 
 	void MainBox::addStatusRow() {
@@ -215,5 +218,14 @@ namespace Reden {
 		if (right_substr < left_substr)
 			return 1;
 		return 0;
+	}
+
+	bool MainBox::keyPressed(guint, guint keycode, Gdk::ModifierType) {
+		if (keycode == 23) { // tab
+			if (chatEntry.get_focused())
+				return true;
+		}
+
+		return false;
 	}
 }
