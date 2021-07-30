@@ -9,14 +9,16 @@ namespace Reden {
 		public:
 			ConnectDialog(const Glib::ustring &title, Gtk::Window &parent, bool modal = true);
 
-			sigc::signal<void(const Glib::ustring &, const Glib::ustring &, const Glib::ustring &)>
+			sigc::signal<void(const Glib::ustring &host, const Glib::ustring &port, const Glib::ustring &nick,
+			                  const Glib::ustring &password)>
 			signal_submit() const { return signal_submit_; }
 
 		private:
-			BasicEntry hostEntry, portEntry, nickEntry;
+			BasicEntry hostEntry, portEntry, nickEntry, usernameEntry, passwordEntry;
 			Gtk::Box buttonBox {Gtk::Orientation::HORIZONTAL};
 			Gtk::Button cancelButton {"Cancel"}, okButton {"OK"};
-			sigc::signal<void(const Glib::ustring &, const Glib::ustring &, const Glib::ustring &)> signal_submit_;
+			sigc::signal<void(const Glib::ustring &host, const Glib::ustring &port, const Glib::ustring &nick,
+			                  const Glib::ustring &password)> signal_submit_;
 
 			void on_activate();
 			void submit();

@@ -12,12 +12,15 @@ namespace Reden {
 		hostEntry.set_placeholder_text("Hostname");
 		portEntry.set_placeholder_text("Port");
 		nickEntry.set_placeholder_text("Nickname");
+		passwordEntry.set_placeholder_text("Password");
 		portEntry.set_text("6667");
 		hostEntry.set_text("localhost");
 		nickEntry.set_text("reden");
+		passwordEntry.set_visibility(false);
 		area.append(hostEntry);
 		area.append(portEntry);
 		area.append(nickEntry);
+		area.append(passwordEntry);
 		area.append(buttonBox);
 		buttonBox.append(cancelButton);
 		buttonBox.append(okButton);
@@ -29,10 +32,11 @@ namespace Reden {
 		hostEntry.signal_activate().connect(sigc::mem_fun(*this, &ConnectDialog::submit));
 		portEntry.signal_activate().connect(sigc::mem_fun(*this, &ConnectDialog::submit));
 		nickEntry.signal_activate().connect(sigc::mem_fun(*this, &ConnectDialog::submit));
+		passwordEntry.signal_activate().connect(sigc::mem_fun(*this, &ConnectDialog::submit));
 	}
 
 	void ConnectDialog::submit() {
 		hide();
-		signal_submit_.emit(hostEntry.get_text(), portEntry.get_text(), nickEntry.get_text());
+		signal_submit_.emit(hostEntry.get_text(), portEntry.get_text(), nickEntry.get_text(), passwordEntry.get_text());
 	}
 }

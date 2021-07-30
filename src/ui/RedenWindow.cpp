@@ -45,13 +45,14 @@ namespace Reden {
 			auto *connect = new ConnectDialog("Connect", *this, true);
 			dialog.reset(connect);
 			connect->signal_submit().connect(
-			[this](const Glib::ustring &hostname, const Glib::ustring &port_str, const Glib::ustring &nick) {
+			[this](const Glib::ustring &hostname, const Glib::ustring &port_str, const Glib::ustring &nick,
+			       const Glib::ustring &password) {
 				long port;
 				if (!formicine::util::parse_long(port_str, port)) {
 					delay([this] { error("Invalid port."); });
 					return;
 				}
-				irc->connect(hostname, nick, port, false);
+				irc->connect(hostname, nick, port, false, password);
 				box.focusEntry();
 			});
 			connect->show();

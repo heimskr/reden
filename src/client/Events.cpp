@@ -54,7 +54,7 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
 			if (ev->isChannel()) {
 				const std::string content = ev->content;
-				auto channel = ev->server->getChannel(ev->where);
+				auto channel = ev->server->getChannel(ev->where, true);
 				const std::string name = channel->withHat(ev->speaker);
 				window.queue([this, content, channel, name] {
 					window.box[channel].addMessage(name, content);
