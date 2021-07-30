@@ -90,7 +90,7 @@ namespace Reden {
 			Gtk::Separator leftSeparator, rightSeparator, topicSeparator;
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
 			Gtk::Label topicLabel {"", Gtk::Align::START};
-			Gtk::ScrolledWindow scrolled, topicScrolled;
+			Gtk::ScrolledWindow serversScrolled, usersScrolled, chatScrolled, topicScrolled;
 			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;
 			Columns columns;

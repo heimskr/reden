@@ -15,7 +15,6 @@ namespace Reden {
 		serverTree.set_vexpand(true);
 		serverTree.set_headers_visible(false);
 		serverTree.set_activate_on_single_click(true);
-		serverTree.set_size_request(200, -1);
 		serverTree.set_can_focus(false);
 		serverTree.add_css_class("server-tree");
 		appendColumn(serverTree, "Name", columns.name);
@@ -26,26 +25,29 @@ namespace Reden {
 		userTree.set_vexpand(true);
 		userTree.set_headers_visible(false);
 		userTree.set_activate_on_single_click(true);
-		userTree.set_size_request(200, -1);
 		userTree.set_can_focus(false);
 		userTree.add_css_class("user-tree");
 		appendColumn(userTree, "Name", columns.name);
-		append(serverTree);
+		serversScrolled.set_child(serverTree);
+		usersScrolled.set_child(userTree);
+		append(serversScrolled);
 		append(leftSeparator);
 		append(chatBox);
 		append(rightSeparator);
-		append(userTree);
+		append(usersScrolled);
+		serversScrolled.set_size_request(200, -1);
+		usersScrolled.set_size_request(200, -1);
 		topicScrolled.set_child(topicLabel);
 		topicScrolled.set_margin(0);
 		topicLabel.set_margin_start(5);
 		topicLabel.set_margin_end(5);
 		chatBox.append(topicScrolled);
 		chatBox.append(topicSeparator);
-		chatBox.append(scrolled);
+		chatBox.append(chatScrolled);
 		chatBox.append(chatEntry);
 		chatEntry.add_css_class("unrounded");
-		scrolled.set_vexpand(true);
-		scrolled.set_child(chatGrid);
+		chatScrolled.set_vexpand(true);
+		chatScrolled.set_child(chatGrid);
 		chatEntry.signal_activate().connect(sigc::mem_fun(*this, &MainBox::entryActivated));
 		chatEntry.grab_focus();
 		addStatusRow();
@@ -238,7 +240,7 @@ namespace Reden {
 		activeView = ptr;
 		LineView &view = getLineView(ptr);
 		line_out = &view;
-		scrolled.set_child(view);
+		chatScrolled.set_child(view);
 		userModel->clear();
 		if (serverRows.count(ptr) != 0) {
 			serverTree.get_selection()->select(serverRows.at(ptr));
@@ -331,14 +333,12 @@ namespace Reden {
 				log("Error: " + std::string(err.what()));
 			}
 		} else if (active().isAlive()) {
-			std::cout << "=)\n";
 			if (PingPong::Channel *chan = activeChannel()) {
 				PingPong::PrivmsgCommand(chan->server, chan->name, std::string(il.body)).send();
 			} else if (PingPong::User *user = activeUser()) {
 				PingPong::PrivmsgCommand(user->server, user->name, std::string(il.body)).send();
 			} else {
-				std::cout << "No channel.\n";
-				// noChannel();
+				std::cout << "No channel.\n"; ///
 			}
 		}
 
