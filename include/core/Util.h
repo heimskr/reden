@@ -15,6 +15,12 @@
 #include "lib/formicine/futil.h"
 
 namespace Reden::Util {
+	bool isAction(const Glib::ustring &);
+
+	/** Turns "\x01" "ACTION foo\x01" into "foo".
+	 *  Do not use if you haven't checked whether the input is actually an action message. */
+	void trimAction(Glib::ustring &);
+
 	/** Returns a path to the user's home directory as a string, optionally ending with a slash. */
 	std::string getHomeString(bool append_slash = true);
 

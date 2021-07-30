@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "core/Util.h"
 #include "ui/LineView.h"
 #include "pingpong/core/Channel.h"
 
@@ -12,16 +13,17 @@ namespace Reden {
 		set_cursor_visible(false);
 		set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
 		auto &buffer = *get_buffer();
-		   timeTag = buffer.create_tag("timestamp");
-		bracketTag = buffer.create_tag("name_bracket");
-		   nameTag = buffer.create_tag("name");
-		messageTag = buffer.create_tag("message");
-		  plainTag = buffer.create_tag("plain");
-		 actionTag = buffer.create_tag("action");
-		channelTag = buffer.create_tag("channel");
-		  modesTag = buffer.create_tag("modes");
-		   userTag = buffer.create_tag("user"); // For things like mode lines
-		  topicTag = buffer.create_tag("topic");
+		    timeTag = buffer.create_tag("timestamp");
+		 bracketTag = buffer.create_tag("name_bracket");
+		    nameTag = buffer.create_tag("name");
+		 messageTag = buffer.create_tag("message");
+		   plainTag = buffer.create_tag("plain");
+		  actionTag = buffer.create_tag("action");
+		 channelTag = buffer.create_tag("channel");
+		   modesTag = buffer.create_tag("modes");
+		    userTag = buffer.create_tag("user"); // For things like mode lines
+		   topicTag = buffer.create_tag("topic");
+		asteriskTag = buffer.create_tag("asterisk");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
 		   timeTag->property_font() = "Monospace";
@@ -37,7 +39,15 @@ namespace Reden {
 	}
 
 	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message) {
-		start().append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
+		start();
+
+		if (Util::isAction(message)) {
+			Glib::ustring copy = message;
+			Util::trimAction(copy);
+			return addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").append(copy, "action");
+		}
+
+		append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
 		return append(message, "message");
 	}
 
@@ -133,7 +143,7 @@ namespace Reden {
 	}
 
 	LineView & LineView::addStar() {
-		append("*", "action").append(" ");
+		append("*", "asterisk").append(" ");
 		return *this;
 	}
 

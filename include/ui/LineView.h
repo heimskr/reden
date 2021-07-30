@@ -51,7 +51,7 @@ namespace Reden {
 
 		private:
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
-			                           modesTag, userTag, topicTag;
+			                           modesTag, userTag, topicTag, asteriskTag;
 			bool alive = true;
 
 			static Glib::ustring makeTimestamp(time_t);

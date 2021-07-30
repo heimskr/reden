@@ -7,6 +7,15 @@
 #include "pingpong/core/Util.h"
 
 namespace Reden::Util {
+	bool isAction(const Glib::ustring &message) {
+		return message.find("\x01" "ACTION ") == 0 && message[message.size() == 1] == '\x01';
+	}
+
+	void trimAction(Glib::ustring &message) {
+		message.erase(0, 8);
+		message.erase(message.size() - 1, 1);
+	}
+
 	std::string getHomeString(bool append_slash) {
 		const char *home = getenv("HOME");
 		if (home == nullptr)
