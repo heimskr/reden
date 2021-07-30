@@ -5,9 +5,7 @@
 #include "pingpong/core/Server.h"
 
 namespace Reden {
-	Client::Client(RedenWindow &window_): window(window_), completer(*this), configs(*this, false) {
-		addCommands();
-	}
+	Client::Client(RedenWindow &window_): window(window_), completer(*this), configs(*this, false) {}
 
 	void Client::add(const Commands::Pair &p) {
 		commandHandlers.insert(p);
@@ -81,6 +79,11 @@ namespace Reden {
 		}
 
 		return true;
+	}
+
+	void Client::init() {
+		addEvents();
+		addCommands();
 	}
 
 	std::shared_ptr<PingPong::IRC> Client::irc() const {

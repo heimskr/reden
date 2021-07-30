@@ -53,6 +53,8 @@ namespace Reden {
 			/** Processes a line of user input and returns whether the line was recognized as a valid input. */
 			bool handleLine(const InputLine &);
 
+			void init();
+
 			std::shared_ptr<PingPong::IRC> irc() const;
 
 			void tabComplete();

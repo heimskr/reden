@@ -14,14 +14,6 @@
 #include "ui/RedenWindow.h"
 
 #include "pingpong/core/IRC.h"
-#include "pingpong/events/Join.h"
-#include "pingpong/events/Mode.h"
-#include "pingpong/events/NamesUpdated.h"
-#include "pingpong/events/Part.h"
-#include "pingpong/events/Privmsg.h"
-#include "pingpong/events/Raw.h"
-#include "pingpong/events/ServerStatus.h"
-#include "pingpong/events/Topic.h"
 #include "lib/formicine/futil.h"
 
 namespace Reden {
@@ -47,7 +39,7 @@ namespace Reden {
 
 		irc->init();
 
-		addListeners();
+		client.init();
 
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {
 			auto *connect = new ConnectDialog("Connect", *this, true);
@@ -118,110 +110,5 @@ namespace Reden {
 
 	void RedenWindow::error(const Glib::ustring &message, bool modal, bool use_markup) {
 		alert(message, Gtk::MessageType::ERROR, modal, use_markup);
-	}
-
-	void RedenWindow::addListeners() {
-		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
-			const bool self = ev->who->isSelf();
-			auto channel = ev->channel;
-			auto name = ev->who->name;
-			queue([this, channel, name, self] {
-				if (self)
-					box.addChannel(channel.get(), true);
-				box[channel].joined(name, channel->name);
-				box.updateChannel(*channel);
-			});
-		});
-
-		PingPong::Events::listen<PingPong::ModeEvent>([this](PingPong::ModeEvent *ev) {
-			auto who = ev->who;
-			auto modeset = ev->modeSet;
-			if (auto channel = ev->getChannel(ev->server))
-				queue([this, channel, who, modeset] {
-					box[channel].mode(channel, who, modeset);
-					box.updateChannel(*channel);
-				});
-		});
-
-		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
-			auto channel = ev->channel;
-			queue([this, channel] {
-				box.updateChannel(*channel);
-			});
-		});
-
-		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
-			if (ev->who->isSelf()) {
-				auto channel = ev->channel;
-				queue([this, channel] {
-					box.eraseChannel(channel.get());
-				});
-			}
-		});
-
-		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
-			if (ev->isChannel()) {
-				const std::string content = ev->content;
-				auto channel = ev->server->getChannel(ev->where);
-				const std::string name = channel->withHat(ev->speaker);
-				queue([this, content, channel, name] {
-					box[channel].addMessage(name, content);
-				});
-			}
-		});
-
-		PingPong::Events::listen<PingPong::RawInEvent>([this](PingPong::RawInEvent *ev) {
-			auto server = ev->server;
-			auto raw = ev->rawIn;
-			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
-				raw.pop_back();
-			queue([this, server, raw] {
-				box.addServer(server, false);
-				box[server] += "<< " + raw;
-			});
-		});
-
-		PingPong::Events::listen<PingPong::RawOutEvent>([this](PingPong::RawOutEvent *ev) {
-			auto server = ev->server;
-			auto raw = ev->rawOut;
-			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
-				raw.pop_back();
-			queue([this, server, raw] {
-				box.addServer(server, false);
-				box[server] += ">> " + raw;
-			});
-		});
-
-		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
-			switch (ev->server->getStatus()) {
-				case PingPong::Server::Stage::Ready: {
-					auto server = ev->server;
-					queue([this, server] {
-						box.addServer(server, true);
-						box.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
-							+ std::to_string(server->port) + ")");
-					});
-					break;
-				}
-				case PingPong::Server::Stage::Dead: {
-					auto server = ev->server;
-					queue([this, server] {
-						box.eraseServer(server);
-					});
-					break;
-				}
-				default:
-					break;
-			}
-		});
-
-		PingPong::Events::listen<PingPong::TopicEvent>([this](PingPong::TopicEvent *ev) {
-			auto channel = ev->channel;
-			auto who = ev->who;
-			queue([this, channel, who] {
-				box.setTopic(channel.get(), std::string(channel->topic));
-				box[channel].topicChanged(channel, who, std::string(channel->topic));
-			});
-		});
 	}
 }

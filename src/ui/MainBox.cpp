@@ -319,6 +319,7 @@ namespace Reden {
 				log("Error: " + std::string(err.what()));
 			}
 		} else if (active().isAlive()) {
+			std::cout << "=)\n";
 			if (PingPong::Channel *chan = activeChannel()) {
 				PingPong::PrivmsgCommand(chan->server, chan->name, std::string(il.body)).send();
 			} else if (PingPong::User *user = activeUser()) {
