@@ -17,14 +17,14 @@ namespace Reden {
 	 *  argument. If either of them doesn't apply, they'll be negative. The function should return true if it handled
 	 *  updating the textinput's text and jumping to the cursor itself, or false if Client::tabComplete should do it.
 	 */
-	using Completion = std::function<bool(Client &, const InputLine &, Glib::ustring &raw, size_t &cursor,
-	                                      long arg_index, long sub)>;
+	using Completion = std::function<bool(Client &, const InputLine &, Glib::ustring &raw, int &cursor, long arg_index,
+	                                      long sub)>;
 
 	/** Completes the /set command. */
-	bool completeSet(Client &, const InputLine &, Glib::ustring &raw, size_t &cursor, long arg_index, long sub);
+	bool completeSet(Client &, const InputLine &, Glib::ustring &raw, int &cursor, long arg_index, long sub);
 
 	/** Completes nicknames but doesn't add ping suffixes. */
-	bool completePlain(Client &, const InputLine &, Glib::ustring &raw, size_t &cursor, long arg_index, long sub);
+	bool completePlain(Client &, const InputLine &, Glib::ustring &raw, int &cursor, long arg_index, long sub);
 
 	/** Contains the state data and logic for dealing with some parts of tab completion for commands. Clients keep an
 	 *  instance of this and pass keypresses to it. */
@@ -42,17 +42,17 @@ namespace Reden {
 			CommandCompleter(Client &parent_): parent(parent_) {}
 
 			void onKey(const Key &);
-			void complete(Glib::ustring &, size_t &);
+			void complete(Glib::ustring &, int &);
 	};
 
 	struct CompletionState {
 		using Suggestor = std::function<Glib::ustring(const std::vector<Glib::ustring> &)>;
 
 		Glib::ustring partial;
-		ssize_t partial_index = -1;
-		ssize_t windex = -1;
-		ssize_t sindex = -1;
-		ssize_t cursor = -1;
+		int partial_index = -1;
+		int windex = -1;
+		int sindex = -1;
+		int cursor = -1;
 
 		std::vector<Suggestor> suggestors {};
 		

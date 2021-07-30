@@ -5,7 +5,7 @@
 namespace Reden {
 	class ConfigCache {
 		private:
-			static Glib::ustring getString(const Glib::ustring &key);
+			static const Glib::ustring & getString(const Glib::ustring &key);
 			static bool getBool(const Glib::ustring &key);
 			static long getLong(const Glib::ustring &key);
 

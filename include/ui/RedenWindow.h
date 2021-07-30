@@ -18,6 +18,7 @@ namespace Reden {
 			std::shared_ptr<PingPong::IRC> irc;
 			Client client;
 			Gtk::HeaderBar *header;
+			MainBox box;
 
 			RedenWindow(BaseObjectType *, const Glib::RefPtr<Gtk::Builder> &);
 
@@ -30,15 +31,10 @@ namespace Reden {
 			void alert(const Glib::ustring &message, Gtk::MessageType = Gtk::MessageType::INFO, bool modal = true,
 					bool use_markup = false);
 			void error(const Glib::ustring &message, bool modal = true, bool use_markup = false);
-			Glib::ustring getInput() const;
-			void setInput(const Glib::ustring &);
-			int getCursor() const;
-			void setCursor(int);
 
 		private:
 			Glib::RefPtr<Gtk::Builder> builder;
 			Glib::RefPtr<Gtk::CssProvider> cssProvider;
-			MainBox mainBox;
 			std::unique_ptr<Gtk::Dialog> dialog;
 			std::list<std::function<void()>> functionQueue;
 			std::mutex functionQueueMutex;

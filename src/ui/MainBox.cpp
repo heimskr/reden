@@ -161,6 +161,32 @@ namespace Reden {
 		chatEntry.set_position(cursor);
 	}
 
+	bool MainBox::inStatus() const {
+		return activeView == this;
+	}
+
+	PingPong::Server * MainBox::activeServer() {
+		if (serverRows.count(activeView) != 0)
+			return reinterpret_cast<PingPong::Server *>(activeView);
+		// Ugly!
+		PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(activeView);
+		if (channelRows.count(channel) != 0)
+			return channel->server;
+		return nullptr;
+	}
+
+	PingPong::Channel * MainBox::activeChannel() {
+		PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(activeView);
+		if (channelRows.count(channel) != 0)
+			return channel;
+		return nullptr;
+	}
+
+	PingPong::User * MainBox::activeUser() {
+		// User windows aren't implemented yet.
+		return nullptr;
+	}
+
 	LineView & MainBox::getLineView(void *ptr) {
 		if (views.count(ptr) == 0)
 			return views.emplace(ptr, LineView()).first->second;

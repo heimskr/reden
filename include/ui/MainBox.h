@@ -12,6 +12,7 @@
 namespace PingPong {
 	class Server;
 	class Channel;
+	class User;
 }
 
 namespace Reden {
@@ -34,6 +35,10 @@ namespace Reden {
 			void setInput(const Glib::ustring &);
 			int getCursor() const;
 			void setCursor(int);
+			bool inStatus() const;
+			PingPong::Server * activeServer();
+			PingPong::Channel * activeChannel();
+			PingPong::User * activeUser();
 
 			LineView & getLineView(void *ptr);
 			const LineView & getLineView(void *ptr) const;

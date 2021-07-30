@@ -7,9 +7,9 @@
 #include <utility>
 #include <variant>
 
-#include "config/FlatDB.h"
 #include "config/KeyConfig.h"
 #include "config/Validation.h"
+#include "core/FlatDB.h"
 
 namespace Reden {
 	class Client;

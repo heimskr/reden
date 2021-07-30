@@ -1,11 +1,14 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "Command.h"
 #include "config/Cache.h"
+#include "config/ConfigDB.h"
 #include "core/TabCompletion.h"
 
 namespace PingPong {
@@ -22,16 +25,17 @@ namespace Reden {
 
 			Client() = delete;
 			Client(const Client &) = delete;
-			Client(RedenWindow &window_): window(window_) {}
+			Client(RedenWindow &window_): window(window_), completer(*this), configs(*this, false) {}
 
 			Client & operator=(const Client &) = delete;
 
+			/** Tries to expand a command (e.g., "mod" → "mode"). Returns a vector of all matches. */
 			std::vector<Glib::ustring> commandMatches(const Glib::ustring &);
 
 			/** Completes a message for a given cursor position. The word_offset parameter represents the index of the
 			 *  word for which the completion suffix will be added. This can be set to a negative value to disable the
 			 *  completion suffix. */
-			void completeMessage(Glib::ustring &, size_t cursor, ssize_t word_offset = 0);
+			void completeMessage(Glib::ustring &, int cursor, int word_offset = 0);
 
 			InputLine getInputLine(const Glib::ustring &) const;
 
@@ -41,5 +45,8 @@ namespace Reden {
 
 		private:
 			RedenWindow &window;
+			CommandCompleter completer;
+			ConfigDB configs;
+			std::multimap<Glib::ustring, Command> commandHandlers;
 	};
 }

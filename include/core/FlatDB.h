@@ -14,8 +14,8 @@ namespace Reden {
 			std::filesystem::path filepath;
 
 			/** Given a data directory name and a database name, this returns the full path of the database. */
-			static std::filesystem::path getDBPath(const Glib::ustring &dbname,
-			                                       const Glib::ustring &dirname = DEFAULT_DATA_DIR);
+			static std::filesystem::path getDBPath(const std::string &dbname,
+			                                       const std::string &dirname = DEFAULT_DATA_DIR);
 
 			/** Attempts to parse a keyvalue pair of the form /^(\w+)=(.+)$/. */
 			static std::pair<Glib::ustring, Glib::ustring> parseKVPair(const Glib::ustring &);

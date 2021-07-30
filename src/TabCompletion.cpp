@@ -6,6 +6,7 @@
 #include "core/Client.h"
 #include "core/InputLine.h"
 #include "core/TabCompletion.h"
+#include "core/Util.h"
 #include "config/Defaults.h"
 #include "ui/RedenWindow.h"
 
@@ -20,9 +21,9 @@ namespace Reden {
 		}
 	}
 
-	void CommandCompleter::complete(Glib::ustring &raw, size_t &cursor) {
+	void CommandCompleter::complete(Glib::ustring &raw, int &cursor) {
 		std::vector<Glib::ustring> split = formicine::util::split(raw, " ", true);
-		std::string first = split[0].substr(1);
+		Glib::ustring first = split[0].substr(1);
 
 		if (!hasPartial) {
 			partial = first;
@@ -35,13 +36,13 @@ namespace Reden {
 		if (matches.size() == 0)
 			return;
 
-		const std::string rest = raw.substr(formicine::util::last_index_of_word(raw, 0));
+		const Glib::ustring rest = raw.substr(Util::lastIndexOfWord(raw, 0));
 
 		if (matches.size() == 1) {
 			raw = "/" + matches[0] + rest;
 			cursor = matches[0].length() + 1;
 
-			if (cursor == raw.length())
+			if (static_cast<size_t>(cursor) == raw.length())
 				raw.push_back(' ');
 
 			++cursor;
@@ -64,13 +65,13 @@ namespace Reden {
 		cursor = matches[0].length() + 1;
 	}
 
-	bool completeSet(Client &client_, const InputLine &line, std::string &raw, size_t &cursor, long arg_index,
+	bool completeSet(Client &client_, const InputLine &line, Glib::ustring &raw, int &cursor, long arg_index,
 	                 long arg_subindex) {
 		CompletionState &state = client_.completionStates["set"];
 		if (2 <= arg_index)
 			return true;
 
-		const std::string first_arg = line.args.empty()? "" : line.args[0];
+		const Glib::ustring first_arg = line.args.empty()? "" : line.args[0];
 
 		if (state.partial_index != arg_index) {
 			state.partial = first_arg;
@@ -78,13 +79,13 @@ namespace Reden {
 		}
 
 		if (arg_index == 1) {
-			const std::string rest = raw.substr(formicine::util::last_index_of_word(raw, 1));
-			const std::string piece = first_arg.substr(0, arg_subindex);
+			const Glib::ustring rest = raw.substr(Util::lastIndexOfWord(raw, 1));
+			const Glib::ustring piece = first_arg.substr(0, arg_subindex);
 			std::vector<Glib::ustring> keys = startsWith(state.partial);
 			if (keys.empty())
 				return true;
 			std::sort(keys.begin(), keys.end());
-			std::string next = formicine::util::next_in_sequence(keys.begin(), keys.end(), piece);
+			Glib::ustring next = Util::nextInSequence(keys.begin(), keys.end(), piece);
 			raw = "/set " + next + rest;
 			cursor = next.length() + 5;
 		}
@@ -123,26 +124,25 @@ namespace Reden {
 
 namespace Reden {
 	void Client::tabComplete() {
-		Glib::ustring text = window.getInput();
+		Glib::ustring text = window.box.getInput();
 
 		if (text.empty())
 			return;
 
-		int cursor = window.getCursor();
+		int cursor = window.box.getCursor();
 
 		// if (ui.activeWindow == ui.statusWindow && text[0] != '/') {
 		// 	text.insert(0, "/");
-		// 	ui.input->setText(text);
-		// 	ui.input->moveTo(++cursor);
+		// 	window.box.setInput(text);
+		// 	window.box.setCursor(++cursor);
 		// 	ui.input->jumpCursor();
 		// }
 
 		InputLine il = getInputLine(text);
-		ssize_t windex, sindex;
-		std::tie(windex, sindex) = formicine::util::word_indices(text, cursor);
+		auto [windex, sindex] = Util::wordIndices(text, cursor);
 
 		if (il.isCommand()) {
-			const std::string old_text {text};
+			const Glib::ustring old_text(text);
 
 			bool handled = false;
 
@@ -159,8 +159,8 @@ namespace Reden {
 
 				// Search through each command handler.
 				for (const auto &handler: commandHandlers) {
-					const std::string &name = handler.first;
-					const Commands::Command &cmd = handler.second;
+					const Glib::ustring &name = handler.first;
+					const Command &cmd = handler.second;
 
 					// If the command handler's name matches the command name...
 					if (name == il.command) {
@@ -178,46 +178,41 @@ namespace Reden {
 
 			if (!handled) {
 				if (old_text != text)
-					ui.input->setText(text);
-
-				ui.input->moveTo(cursor);
-				ui.input->jumpCursor();
+					window.box.setInput(text);
+				window.box.setCursor(cursor);
 			}
-		} else if (activeServer()) {
-			if (ui.activeWindow == ui.statusWindow && text.front() != '/') {
+		} else if (window.box.activeServer()) {
+			if (window.box.inStatus() && text[0] != '/') {
 				text.insert(0, "/");
-				ui.input->setText(text);
-				ui.input->moveTo(++cursor);
-				ui.input->jumpCursor();
+				window.box.setInput(text);
+				window.box.setCursor(++cursor);
 			}
 
 			completeMessage(text, cursor);
 		}
 	}
 
-	void Client::completeMessage(std::string &text, size_t cursor, ssize_t word_offset) {
+	void Client::completeMessage(Glib::ustring &text, int cursor, int word_offset) {
 		if (text.empty())
 			return;
 
 		InputLine il = getInputLine(text);
-		ssize_t windex, sindex;
-		std::tie(windex, sindex) = formicine::util::word_indices(text, cursor);
+		auto [windex, sindex] = Util::wordIndices(text, cursor);
 
-		const std::string old_text {text};
+		const Glib::ustring old_text(text);
 
-		const UI::Window *window = ui.activeWindow;
-		const PingPong::Server *server = window->server;
-		const std::shared_ptr<PingPong::Channel> channel = window->channel;
-		const std::shared_ptr<PingPong::User> user = window->user;
+		const PingPong::Server *server = window.box.activeServer();
+		const PingPong::Channel *channel = window.box.activeChannel();
+		const PingPong::User *user = window.box.activeUser();
 
-		Completions::CompletionState &state = completionStates["_"];
-		std::string word;
+		CompletionState &state = completionStates["_"];
+		Glib::ustring word;
 		if (!state.empty()) {
 			windex = state.windex;
 			sindex = state.sindex;
-			word = formicine::util::nth_word(text, windex);
+			word = Util::nthWord(text, windex);
 		} else {
-			word = formicine::util::nth_word(text, windex);
+			word = Util::nthWord(text, windex);
 			if (!word.empty()) {
 				state.windex = windex;
 				state.sindex = sindex;
@@ -227,23 +222,23 @@ namespace Reden {
 			}
 		}
 
-		const std::string &suffix = configs.get("completion", "ping_suffix").stringRef();
+		const Glib::ustring &suffix = std::get<Glib::ustring>(configs.get("completion", "ping_suffix"));
 		formicine::util::remove_suffix(word, suffix);
 
-		std::deque<std::string> items = {};
+		std::deque<Glib::ustring> items;
 		bool do_sort = true; // For channels, the order is important and shouldn't be disturbed.
 
-		const std::string lower = formicine::util::lower(state.partial);
+		const Glib::ustring lower = state.partial.lowercase();
 
 		if (word[0] == '#') {
 			for (const std::shared_ptr<PingPong::Channel> &ptr: server->channels) {
-				if (formicine::util::lower(ptr->name).find(lower) == 0)
+				if (Glib::ustring(ptr->name).lowercase().find(lower) == 0)
 					items.push_back(ptr->name);
 			}
 		} else if (channel) {
 			do_sort = false;
 			for (const std::shared_ptr<PingPong::User> &ptr: channel->users) {
-				if (formicine::util::lower(ptr->name).find(lower) == 0)
+				if (Glib::ustring(ptr->name).lowercase().find(lower) == 0)
 					items.push_back(ptr->name);
 			}
 		} else if (user) {
@@ -260,22 +255,21 @@ namespace Reden {
 			if (1 < items.size()) {
 				// It's reasonable to assume that you're not desparate to complete your own nick, so for your
 				// convenience we'll move your name to the end of the list.
-				const std::string self = server->getNick();
-				for (auto iter = items.begin(); iter != items.end() && iter + 1 != items.end(); ++iter) {
+				const Glib::ustring self = server->getNick();
+				for (auto iter = items.begin(); iter != items.end() && iter + 1 != items.end(); ++iter)
 					if (*iter == self) {
 						items.erase(iter);
 						items.push_back(self);
 						break;
 					}
-				}
 			}
 
-			const std::string next = formicine::util::next_in_sequence(items.begin(), items.end(), word);
-			cursor = formicine::util::replace_word(text, windex, next);
+			const Glib::ustring next = Util::nextInSequence(items.begin(), items.end(), word);
+			cursor = Util::replaceWord(text, windex, next);
 
-			if (windex == word_offset && next.front() != '#' && !suffix.empty()) {
+			if (windex == word_offset && next[0] != '#' && !suffix.empty()) {
 				// Erase any space already after the colon to prevent spaces from accumulating.
-				if (cursor < text.length() && std::isspace(text[cursor]))
+				if (static_cast<size_t>(cursor) < text.length() && std::isspace(text[cursor]))
 					text.erase(cursor, 1);
 
 				text.insert(cursor, suffix + " ");
@@ -284,13 +278,8 @@ namespace Reden {
 		}
 
 		if (old_text != text)
-			ui.input->setText(text);
+			window.box.setInput(text);
 
-		ui.input->moveTo(cursor);
-		ui.input->jumpCursor();
-	}
-
-	void Client::keyPostlistener(const Haunted::Key &k) {
-		completer.onKey(k);
+		window.box.setCursor(cursor);
 	}
 }

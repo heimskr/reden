@@ -26,7 +26,7 @@
 
 namespace Reden {
 	RedenWindow::RedenWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder_):
-	Gtk::ApplicationWindow(cobject), client(*this), builder(builder_), mainBox(*this) {
+	Gtk::ApplicationWindow(cobject), client(*this), builder(builder_), box(*this) {
 		irc = std::make_shared<PingPong::IRC>();
 
 		header = builder->get_widget<Gtk::HeaderBar>("headerbar");
@@ -60,7 +60,7 @@ namespace Reden {
 					return;
 				}
 				irc->connect(hostname, nick, port, false);
-				mainBox.focusEntry();
+				box.focusEntry();
 			});
 			connect->show();
 		}));
@@ -82,7 +82,7 @@ namespace Reden {
 			}
 		});
 
-		set_child(mainBox);
+		set_child(box);
 	}
 
 	RedenWindow * RedenWindow::create() {
@@ -120,22 +120,6 @@ namespace Reden {
 		alert(message, Gtk::MessageType::ERROR, modal, use_markup);
 	}
 
-	Glib::ustring RedenWindow::getInput() const {
-		return mainBox.getInput();
-	}
-
-	void RedenWindow::setInput(const Glib::ustring &text) {
-		mainBox.setInput(text);
-	}
-
-	int RedenWindow::getCursor() const {
-		return mainBox.getCursor();
-	}
-
-	void RedenWindow::setCursor(int cursor) {
-		mainBox.setCursor(cursor);
-	}
-
 	void RedenWindow::addListeners() {
 		PingPong::Events::listen<PingPong::JoinEvent>([this](PingPong::JoinEvent *ev) {
 			const bool self = ev->who->isSelf();
@@ -143,9 +127,9 @@ namespace Reden {
 			auto name = ev->who->name;
 			queue([this, channel, name, self] {
 				if (self)
-					mainBox.addChannel(channel.get(), true);
-				mainBox[channel].joined(name, channel->name);
-				mainBox.updateChannel(*channel);
+					box.addChannel(channel.get(), true);
+				box[channel].joined(name, channel->name);
+				box.updateChannel(*channel);
 			});
 		});
 
@@ -154,15 +138,15 @@ namespace Reden {
 			auto modeset = ev->modeSet;
 			if (auto channel = ev->getChannel(ev->server))
 				queue([this, channel, who, modeset] {
-					mainBox[channel].mode(channel, who, modeset);
-					mainBox.updateChannel(*channel);
+					box[channel].mode(channel, who, modeset);
+					box.updateChannel(*channel);
 				});
 		});
 
 		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
 			auto channel = ev->channel;
 			queue([this, channel] {
-				mainBox.updateChannel(*channel);
+				box.updateChannel(*channel);
 			});
 		});
 
@@ -170,7 +154,7 @@ namespace Reden {
 			if (ev->who->isSelf()) {
 				auto channel = ev->channel;
 				queue([this, channel] {
-					mainBox.eraseChannel(channel.get());
+					box.eraseChannel(channel.get());
 				});
 			}
 		});
@@ -181,7 +165,7 @@ namespace Reden {
 				auto channel = ev->server->getChannel(ev->where);
 				const std::string name = channel->withHat(ev->speaker);
 				queue([this, content, channel, name] {
-					mainBox[channel].addMessage(name, content);
+					box[channel].addMessage(name, content);
 				});
 			}
 		});
@@ -192,8 +176,8 @@ namespace Reden {
 			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
 				raw.pop_back();
 			queue([this, server, raw] {
-				mainBox.addServer(server, false);
-				mainBox[server] += "<< " + raw;
+				box.addServer(server, false);
+				box[server] += "<< " + raw;
 			});
 		});
 
@@ -203,8 +187,8 @@ namespace Reden {
 			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
 				raw.pop_back();
 			queue([this, server, raw] {
-				mainBox.addServer(server, false);
-				mainBox[server] += ">> " + raw;
+				box.addServer(server, false);
+				box[server] += ">> " + raw;
 			});
 		});
 
@@ -213,8 +197,8 @@ namespace Reden {
 				case PingPong::Server::Stage::Ready: {
 					auto server = ev->server;
 					queue([this, server] {
-						mainBox.addServer(server, true);
-						mainBox.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
+						box.addServer(server, true);
+						box.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
 							+ std::to_string(server->port) + ")");
 					});
 					break;
@@ -222,7 +206,7 @@ namespace Reden {
 				case PingPong::Server::Stage::Dead: {
 					auto server = ev->server;
 					queue([this, server] {
-						mainBox.eraseServer(server);
+						box.eraseServer(server);
 					});
 					break;
 				}
@@ -235,8 +219,8 @@ namespace Reden {
 			auto channel = ev->channel;
 			auto who = ev->who;
 			queue([this, channel, who] {
-				mainBox.setTopic(channel.get(), std::string(channel->topic));
-				mainBox[channel].topicChanged(channel, who, std::string(channel->topic));
+				box.setTopic(channel.get(), std::string(channel->topic));
+				box[channel].topicChanged(channel, who, std::string(channel->topic));
 			});
 		});
 	}
