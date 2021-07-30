@@ -17,6 +17,7 @@ namespace PingPong {
 
 namespace Reden {
 	class RedenWindow;
+	class Client;
 
 	class MainBox: public Gtk::Box {
 		public:
@@ -36,9 +37,11 @@ namespace Reden {
 			int getCursor() const;
 			void setCursor(int);
 			bool inStatus() const;
+			LineView & active();
 			PingPong::Server * activeServer();
 			PingPong::Channel * activeChannel();
 			PingPong::User * activeUser();
+			void log(const Glib::ustring &);
 
 			LineView & getLineView(void *ptr);
 			const LineView & getLineView(void *ptr) const;
@@ -98,10 +101,13 @@ namespace Reden {
 			std::unordered_map<std::string, Gtk::TreeModel::iterator> userRows;
 			std::unordered_map<void *, std::set<std::string>> userSets;
 
+			Client & client();
+
 			void addStatusRow();
 			void focusView(void *);
 			void serverRowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			int compareUsers(const Gtk::TreeModel::const_iterator &, const Gtk::TreeModel::const_iterator &);
 			bool keyPressed(guint, guint, Gdk::ModifierType);
+			void entryActivated();
 	};
 }

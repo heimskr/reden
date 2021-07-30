@@ -26,9 +26,13 @@ namespace Reden {
 			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                        const std::string &);
 
+			bool isAlive() const { return alive; }
+
 		private:
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
 			                           modesTag, userTag, topicTag;
+			bool alive = true;
+
 			static std::string makeTimestamp(time_t);
 			static std::string makeTimestamp();
 

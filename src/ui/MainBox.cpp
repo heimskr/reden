@@ -2,6 +2,7 @@
 #include "ui/MainBox.h"
 #include "ui/RedenWindow.h"
 
+#include "pingpong/commands/Privmsg.h"
 #include "pingpong/core/Debug.h"
 #include "pingpong/core/Server.h"
 
@@ -43,19 +44,17 @@ namespace Reden {
 		chatEntry.add_css_class("unrounded");
 		scrolled.set_vexpand(true);
 		scrolled.set_child(chatGrid);
-		chatEntry.signal_activate().connect([this] {
-			if (parent.irc->activeServer)
-				parent.irc->activeServer->quote(chatEntry.get_text());
-			else
-				std::cerr << "No active server.\n";
-			chatEntry.set_text("");
-		});
+		chatEntry.signal_activate().connect(sigc::mem_fun(*this, &MainBox::entryActivated));
 		chatEntry.grab_focus();
 		addStatusRow();
 		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
 		keyController = Gtk::EventControllerKey::create();;
 		keyController->signal_key_pressed().connect(sigc::mem_fun(*this, &MainBox::keyPressed), false);
 		add_controller(keyController);
+	}
+
+	Client & MainBox::client() {
+		return parent.client;
 	}
 
 	void MainBox::addStatusRow() {
@@ -165,6 +164,10 @@ namespace Reden {
 		return activeView == this;
 	}
 
+	LineView & MainBox::active() {
+		return getLineView(activeView);
+	}
+
 	PingPong::Server * MainBox::activeServer() {
 		if (serverRows.count(activeView) != 0)
 			return reinterpret_cast<PingPong::Server *>(activeView);
@@ -185,6 +188,10 @@ namespace Reden {
 	PingPong::User * MainBox::activeUser() {
 		// User windows aren't implemented yet.
 		return nullptr;
+	}
+
+	void MainBox::log(const Glib::ustring &string) {
+		active() += string;
 	}
 
 	LineView & MainBox::getLineView(void *ptr) {
@@ -269,5 +276,59 @@ namespace Reden {
 		}
 
 		return false;
+	}
+
+	void MainBox::entryActivated() {
+		// if (parent.irc->activeServer)
+		// 	parent.irc->activeServer->quote(chatEntry.get_text());
+		// else
+		// 	std::cerr << "No active server.\n";
+		// chatEntry.set_text("");
+
+		const Glib::ustring input = chatEntry.get_text();
+		chatEntry.set_text("");
+
+		if (input.empty())
+			return;
+
+		InputLine il = client().getInputLine(input);
+		// aliasDB.expand(il);
+
+		// if (!beforeInput(il))
+		// 	return;
+
+		if (il.isCommand()) {
+			try {
+				if (!client().handleLine(il)) {
+					// If the command isn't an exact match, try partial matches (e.g., "/j" for "/join").
+					const Glib::ustring &cmd = il.command;
+
+					std::vector<Glib::ustring> matches = client().commandMatches(cmd);
+
+					if (1 < matches.size()) {
+						log("Ambiguous command: /" + cmd);
+						Glib::ustring joined;
+						for (const Glib::ustring &match: matches)
+							joined += "/" + match + " ";
+						DBG("Matches: " << joined);
+					} else if (matches.empty() || !client().handleLine("/" + matches[0] + " " + il.body)) {
+						log("Unknown command: /" + cmd);
+					}
+				}
+			} catch (std::exception &err) {
+				log("Error: " + std::string(err.what()));
+			}
+		} else if (active().isAlive()) {
+			if (PingPong::Channel *chan = activeChannel()) {
+				PingPong::PrivmsgCommand(chan->server, chan->name, std::string(il.body)).send();
+			} else if (PingPong::User *user = activeUser()) {
+				PingPong::PrivmsgCommand(user->server, user->name, std::string(il.body)).send();
+			} else {
+				std::cout << "No channel.\n";
+				// noChannel();
+			}
+		}
+
+		// afterInput(il);
 	}
 }

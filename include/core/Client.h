@@ -39,6 +39,9 @@ namespace Reden {
 
 			InputLine getInputLine(const Glib::ustring &) const;
 
+			/** Processes a line of user input and returns whether the line was recognized as a valid input. */
+			bool handleLine(const InputLine &);
+
 			std::shared_ptr<PingPong::IRC> irc() const;
 
 			void tabComplete();
