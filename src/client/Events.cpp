@@ -16,7 +16,6 @@ namespace Reden {
 			const bool self = ev->who->isSelf();
 			auto channel = ev->channel;
 			auto name = ev->who->name;
-			std::cout << "JoinEvent(self=" << self << ", channel=" << channel->name << ", name=" << name << ")\n";
 			window.queue([this, channel, name, self] {
 				if (self)
 					window.box.addChannel(channel.get(), true);

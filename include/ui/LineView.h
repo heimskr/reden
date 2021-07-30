@@ -53,6 +53,9 @@ namespace Reden {
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
 			                           modesTag, userTag, topicTag, asteriskTag;
 			bool alive = true;
+			/** Whether the LineView was scrolled to the bottom at the beginning of the last call to start(). */
+			bool wasAtEnd = false;
+			Glib::RefPtr<Gtk::TextBuffer::Mark> endMark;
 
 			static Glib::ustring makeTimestamp(time_t);
 			static Glib::ustring makeTimestamp();
@@ -65,5 +68,7 @@ namespace Reden {
 			LineView & addStar();
 
 			void setBold(Glib::RefPtr<Gtk::TextTag>);
+			bool atEnd() const;
+			LineView & scroll();
 	};
 }

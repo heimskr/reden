@@ -91,7 +91,6 @@ namespace Reden {
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
 			Gtk::Label topicLabel {"", Gtk::Align::START};
 			Gtk::ScrolledWindow serversScrolled, usersScrolled, chatScrolled, topicScrolled;
-			Gtk::Grid chatGrid;
 			BasicEntry chatEntry;
 			Columns columns;
 			Glib::RefPtr<Gtk::EventControllerKey> keyController;

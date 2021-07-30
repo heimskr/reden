@@ -47,7 +47,6 @@ namespace Reden {
 		chatBox.append(chatEntry);
 		chatEntry.add_css_class("unrounded");
 		chatScrolled.set_vexpand(true);
-		chatScrolled.set_child(chatGrid);
 		chatEntry.signal_activate().connect(sigc::mem_fun(*this, &MainBox::entryActivated));
 		chatEntry.grab_focus();
 		addStatusRow();

@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <iostream>
+#include <cmath>
 #include <sstream>
 
 #include "core/Util.h"
@@ -32,10 +33,11 @@ namespace Reden {
 		setBold(channelTag);
 		setBold(userTag);
 		setBold(topicTag);
+		endMark = get_buffer()->create_mark(get_buffer()->end(), false);
 	}
 
 	LineView & LineView::operator+=(const Glib::ustring &text) {
-		return start().append(text, "plain");
+		return start().append(text, "plain").scroll();
 	}
 
 	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message) {
@@ -44,15 +46,16 @@ namespace Reden {
 		if (Util::isAction(message)) {
 			Glib::ustring copy = message;
 			Util::trimAction(copy);
-			return addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").append(copy, "action");
+			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").append(copy, "action");
+			return scroll();
 		}
 
 		append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
-		return append(message, "message");
+		return append(message, "message").scroll();
 	}
 
 	LineView & LineView::joined(const Glib::ustring &name, const Glib::ustring &channel) {
-		return start().addStar().append(name, "name").append(" joined ").append(channel, "channel");
+		return start().addStar().append(name, "name").append(" joined ").append(channel, "channel").scroll();
 	}
 
 	LineView & LineView::mode(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
@@ -67,7 +70,7 @@ namespace Reden {
 		append(modeset.modeString(), "modes");
 		if (!modeset.extra.empty())
 			append(" on ").append(modeset.extra, "user");
-		return *this;
+		return scroll();
 	}
 
 	LineView & LineView::topicChanged(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
@@ -77,7 +80,7 @@ namespace Reden {
 			append("Topic for ").append(channel->name, "channel").append(" is ").append(topic, "topic");
 		else
 			append(channel->withHat(who), "user").append(" changed the topic to ").append(topic, "topic");
-		return *this;
+		return scroll();
 	}
 
 	void LineView::clear() {
@@ -115,6 +118,7 @@ namespace Reden {
 	}
 
 	LineView & LineView::start() {
+		wasAtEnd = atEnd();
 		return addNewline().addTime();
 	}
 
@@ -161,5 +165,16 @@ namespace Reden {
 
 	void LineView::setBold(Glib::RefPtr<Gtk::TextTag> tag) {
 		tag->property_weight() = 2 * tag->property_weight();
+	}
+
+	bool LineView::atEnd() const {
+		const auto vadj = get_vadjustment();
+		return std::abs(vadj->get_upper() - vadj->get_page_size() - vadj->get_value()) < 0.0001;
+	}
+
+	LineView & LineView::scroll() {
+		if (wasAtEnd)
+			scroll_to(endMark);
+		return *this;
 	}
 }
