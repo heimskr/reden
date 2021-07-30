@@ -145,6 +145,22 @@ namespace Reden {
 				userSets[&channel].insert(user->name);
 	}
 
+	Glib::ustring MainBox::getInput() const {
+		return chatEntry.get_text();
+	}
+
+	void MainBox::setInput(const Glib::ustring &text) {
+		chatEntry.set_text(text);
+	}
+
+	int MainBox::getCursor() const {
+		return chatEntry.get_position();
+	}
+
+	void MainBox::setCursor(int cursor) {
+		chatEntry.set_position(cursor);
+	}
+
 	LineView & MainBox::getLineView(void *ptr) {
 		if (views.count(ptr) == 0)
 			return views.emplace(ptr, LineView()).first->second;
@@ -221,9 +237,9 @@ namespace Reden {
 	}
 
 	bool MainBox::keyPressed(guint, guint keycode, Gdk::ModifierType) {
-		if (keycode == 23) { // tab
-			if (chatEntry.get_focused())
-				return true;
+		if (keycode == 23 && chatEntry.get_focused()) { // tab
+			parent.client.tabComplete();
+			return true;
 		}
 
 		return false;

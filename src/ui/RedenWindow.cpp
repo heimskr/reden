@@ -12,6 +12,8 @@
 #include "FS.h"
 #include "ui/ConnectDialog.h"
 #include "ui/RedenWindow.h"
+
+#include "pingpong/core/IRC.h"
 #include "pingpong/events/Join.h"
 #include "pingpong/events/Mode.h"
 #include "pingpong/events/NamesUpdated.h"
@@ -24,8 +26,8 @@
 
 namespace Reden {
 	RedenWindow::RedenWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder_):
-	Gtk::ApplicationWindow(cobject), builder(builder_), mainBox(*this) {
-		irc = new PingPong::IRC;
+	Gtk::ApplicationWindow(cobject), client(*this), builder(builder_), mainBox(*this) {
+		irc = std::make_shared<PingPong::IRC>();
 
 		header = builder->get_widget<Gtk::HeaderBar>("headerbar");
 		set_titlebar(*header);
@@ -76,8 +78,7 @@ namespace Reden {
 					server->quit("Leaving");
 				// Hack: wait for servers to die
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
-				delete irc;
-				irc = nullptr;
+				irc.reset();
 			}
 		});
 
@@ -117,6 +118,22 @@ namespace Reden {
 
 	void RedenWindow::error(const Glib::ustring &message, bool modal, bool use_markup) {
 		alert(message, Gtk::MessageType::ERROR, modal, use_markup);
+	}
+
+	Glib::ustring RedenWindow::getInput() const {
+		return mainBox.getInput();
+	}
+
+	void RedenWindow::setInput(const Glib::ustring &text) {
+		mainBox.setInput(text);
+	}
+
+	int RedenWindow::getCursor() const {
+		return mainBox.getCursor();
+	}
+
+	void RedenWindow::setCursor(int cursor) {
+		mainBox.setCursor(cursor);
 	}
 
 	void RedenWindow::addListeners() {

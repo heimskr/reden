@@ -30,6 +30,10 @@ namespace Reden {
 			void eraseChannel(PingPong::Channel *);
 			void addStatus(const std::string &);
 			void updateChannel(PingPong::Channel &);
+			Glib::ustring getInput() const;
+			void setInput(const Glib::ustring &);
+			int getCursor() const;
+			void setCursor(int);
 
 			LineView & getLineView(void *ptr);
 			const LineView & getLineView(void *ptr) const;
