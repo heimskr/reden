@@ -11,6 +11,8 @@
 #include "config/ConfigDB.h"
 #include "core/TabCompletion.h"
 
+#include "pingpong/core/Server.h"
+
 namespace PingPong {
 	class IRC;
 }
@@ -25,9 +27,18 @@ namespace Reden {
 
 			Client() = delete;
 			Client(const Client &) = delete;
-			Client(RedenWindow &window_): window(window_), completer(*this), configs(*this, false) {}
+			Client(RedenWindow &window_);
 
 			Client & operator=(const Client &) = delete;
+
+			/** Adds a command handler, given a pair that signifies the name of the command as typed by the user plus a
+			 *  handler tuple. */
+			void add(const Commands::Pair &);
+			void add(const std::string &, const Command &);
+			void add(const std::string &, int, int, bool, const Command::Handler &, const Completion & = {},
+			         const std::vector<CompletionState::Suggestor> & = {});
+			void addBool(const std::string &, int, int, bool, const Command::BoolHandler &, const Completion & = {},
+			             const std::vector<CompletionState::Suggestor> & = {});
 
 			/** Tries to expand a command (e.g., "mod" → "mode"). Returns a vector of all matches. */
 			std::vector<Glib::ustring> commandMatches(const Glib::ustring &);
@@ -51,5 +62,28 @@ namespace Reden {
 			CommandCompleter completer;
 			ConfigDB configs;
 			std::multimap<Glib::ustring, Command> commandHandlers;
+
+// client/Commands.cpp
+
+		public:
+			/** Adds the built-in command handlers. */
+			void addCommands();
+
+// client/Events.cpp
+
+		private:
+			using QueueFn   = std::function<void()>;
+			using QueuePair = std::pair<PingPong::Server::Stage, QueueFn>;
+			std::unordered_map<PingPong::Server *, std::list<QueuePair>> serverStatusQueue {};
+
+			/** Calls and removes all functions in the server status queue waiting for a given server and status. */
+			void callInQueue(PingPong::Server *, PingPong::Server::Stage);
+
+		public:
+			/** Adds listeners for pingpong events. */
+			void addEvents();
+
+			/** Adds a function to a queue to be called when a server reaches a given stage. */
+			void waitForServer(PingPong::Server *, PingPong::Server::Stage, const QueueFn &);
 	};
 }

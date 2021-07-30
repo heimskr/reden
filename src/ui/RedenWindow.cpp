@@ -26,7 +26,7 @@
 
 namespace Reden {
 	RedenWindow::RedenWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder_):
-	Gtk::ApplicationWindow(cobject), client(*this), builder(builder_), box(*this) {
+	Gtk::ApplicationWindow(cobject), client(*this), box(*this), builder(builder_) {
 		irc = std::make_shared<PingPong::IRC>();
 
 		header = builder->get_widget<Gtk::HeaderBar>("headerbar");

@@ -5,8 +5,29 @@
 #include "pingpong/core/Server.h"
 
 namespace Reden {
-	std::shared_ptr<PingPong::IRC> Client::irc() const {
-		return window.irc;
+	Client::Client(RedenWindow &window_): window(window_), completer(*this), configs(*this, false) {
+		addCommands();
+	}
+
+	void Client::add(const Commands::Pair &p) {
+		commandHandlers.insert(p);
+		completionStates.insert({p.first, CompletionState(p.second.suggestors)});
+	}
+
+	void Client::add(const std::string &command_name, const Command &command) {
+		add({command_name, command});
+	}
+
+	void Client::add(const std::string &command_name, int min_args, int max_args, bool needs_server,
+	                 const Command::Handler &handler_fn, const Completion &completion_fn,
+	                 const std::vector<CompletionState::Suggestor> &suggestors) {
+		add({command_name, {min_args, max_args, needs_server, handler_fn, completion_fn, suggestors}});
+	}
+
+	void Client::addBool(const std::string &command_name, int min_args, int max_args, bool needs_server,
+	                     const Command::BoolHandler &handler_fn, const Completion &completion_fn,
+	                     const std::vector<CompletionState::Suggestor> &suggestors) {
+		add({command_name, {min_args, max_args, needs_server, handler_fn, completion_fn, suggestors}});
 	}
 
 	std::vector<Glib::ustring> Client::commandMatches(const Glib::ustring &command_name) {
@@ -60,5 +81,9 @@ namespace Reden {
 		}
 
 		return true;
+	}
+
+	std::shared_ptr<PingPong::IRC> Client::irc() const {
+		return window.irc;
 	}
 }
