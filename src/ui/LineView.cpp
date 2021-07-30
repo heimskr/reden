@@ -70,6 +70,10 @@ namespace Reden {
 		return *this;
 	}
 
+	void LineView::clear() {
+		get_buffer()->set_text("");
+	}
+
 	LineView & LineView::start() {
 		return addNewline().addTime();
 	}

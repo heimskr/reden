@@ -27,6 +27,7 @@ namespace Reden {
 			                        const std::string &);
 
 			bool isAlive() const { return alive; }
+			void clear();
 
 		private:
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
