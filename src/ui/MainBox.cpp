@@ -6,6 +6,8 @@
 #include "pingpong/core/Debug.h"
 #include "pingpong/core/Server.h"
 
+#include "VSCHacks.h"
+
 namespace Reden {
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
 		serverModel = Gtk::TreeStore::create(columns);
@@ -69,8 +71,11 @@ namespace Reden {
 	}
 
 	void MainBox::addServer(PingPong::Server *server, bool focus) {
-		if (serverRows.count(server) != 0)
+		if (serverRows.count(server) != 0) {
+			if (focus)
+				focusView(server);
 			return;
+		}
 		auto row = serverModel->append();
 		(*row)[columns.name] = server->id;
 		(*row)[columns.pointer] = server;
