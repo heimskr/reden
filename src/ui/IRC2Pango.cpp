@@ -67,9 +67,14 @@ namespace Reden {
 						format.color = atoi(color_buffer.c_str());
 						color_buffer.clear();
 						out += format;
+						state = State::Normal;
+						continue;
 					}
-				} else
+				} else {
+					color_buffer.clear();
+					format.color = -1;
 					state = State::Normal;
+				}
 			}
 
 			if (state == State::Normal) {
@@ -84,6 +89,7 @@ namespace Reden {
 							state = State::Color;
 						} else {
 							flush_buffer();
+							state = State::Color;
 							format.color = -1;
 							out += format;
 						}

@@ -38,8 +38,9 @@ namespace Reden::Tests {
 				ansi::out << ansi::good << ansi::bold(input_escaped) << " => "_d << ansi::bold(expected) << ansi::endl;
 				++passed;
 			} else {
-				ansi::out << ansi::bad << ansi::bold(input_escaped) << " => "_d << ansi::bold(actual) << " (expected "
-				          << ansi::bold(expected) << ")" << ansi::endl;
+				ansi::out << ansi::bad << ansi::bold(input_escaped) << ansi::endl;
+				ansi::out << "    Expected: " << ansi::bold(expected) << ansi::endl;
+				ansi::out << "    Actual:   " << ansi::bold(actual) << ansi::endl;
 				++failed;
 			}
 		}
