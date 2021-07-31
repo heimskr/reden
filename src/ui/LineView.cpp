@@ -37,8 +37,13 @@ namespace Reden {
 		endMark = get_buffer()->create_mark(get_buffer()->end(), false);
 	}
 
-	LineView & LineView::operator+=(const Glib::ustring &text) {
-		return start().append(text, "plain").scroll();
+	LineView & LineView::add(const Glib::ustring &text, bool pangoize) {
+		start();
+		if (pangoize)
+			get_buffer()->insert_markup(get_buffer()->end(), irc2pango(text));
+		else
+			append(text, "plain");
+		return scroll();
 	}
 
 	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message) {

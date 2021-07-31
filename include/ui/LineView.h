@@ -28,7 +28,7 @@ namespace Reden {
 			LineView(PingPong::Server *server): parent(server), type(ParentType::Server) {}
 			LineView(PingPong::User *user): parent(user), type(ParentType::User) {}
 
-			LineView & operator+=(const Glib::ustring &text);
+			LineView & add(const Glib::ustring &text, bool pangoize = true);
 			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message);
 			LineView & joined(const Glib::ustring &name, const Glib::ustring &channel);
 			LineView & mode(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,

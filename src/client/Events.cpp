@@ -77,7 +77,7 @@ namespace Reden {
 				raw.pop_back();
 			window.queue([this, server, raw] {
 				window.box.addServer(server, false);
-				window.box[server] += "<< " + raw;
+				window.box[server].add("<< " + raw);
 			});
 		});
 
@@ -88,7 +88,7 @@ namespace Reden {
 				raw.pop_back();
 			window.queue([this, server, raw] {
 				window.box.addServer(server, false);
-				window.box[server] += ">> " + raw;
+				window.box[server].add(">> " + raw);
 			});
 		});
 

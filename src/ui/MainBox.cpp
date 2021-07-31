@@ -135,8 +135,8 @@ namespace Reden {
 		channelRows.erase(channel);
 	}
 
-	void MainBox::addStatus(const std::string &line) {
-		getLineView(this) += line;
+	void MainBox::addStatus(const std::string &line, bool pangoize) {
+		getLineView(this).add(line, pangoize);
 	}
 
 	void MainBox::updateChannel(PingPong::Channel &channel) {
@@ -221,8 +221,8 @@ namespace Reden {
 		return nullptr;
 	}
 
-	void MainBox::log(const Glib::ustring &string) {
-		active() += string;
+	void MainBox::log(const Glib::ustring &string, bool pangoize) {
+		active().add(string, pangoize);
 	}
 
 	LineView & MainBox::getLineView(void *ptr) {
