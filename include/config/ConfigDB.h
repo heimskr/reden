@@ -107,10 +107,10 @@ namespace Reden {
 			ssize_t keyCount(const Glib::ustring &group) const;
 
 			/** Returns a copy of the config database with all default keys filled in if not already present. */
-			GroupMap withDefaults() const;
+			GroupMap withDefaults();
 
 			/** Stringifies the config database. */
-			operator Glib::ustring() const override;
+			operator Glib::ustring() override;
 
 			GroupMap::iterator begin() { return db.begin(); }
 			GroupMap::iterator end() { return db.end(); }

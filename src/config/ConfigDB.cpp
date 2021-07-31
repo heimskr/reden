@@ -126,6 +126,7 @@ namespace Reden {
 
 
 	Value & ConfigDB::get(const Glib::ustring &group, const Glib::ustring &key) {
+		auto lock = lockDB();
 		ensureKnown(group, key);
 
 		if (hasKey(group, key))
@@ -142,6 +143,7 @@ namespace Reden {
 	}
 
 	bool ConfigDB::insert(const Glib::ustring &group, const Glib::ustring &key, const Value &value, bool save) {
+		auto lock = lockDB();
 		ensureKnown(group, key);
 
 		SubMap &sub = db[group];
@@ -185,13 +187,14 @@ namespace Reden {
 	}
 
 	bool ConfigDB::remove(const Glib::ustring &group, const Glib::ustring &key, bool apply_default, bool save) {
+		auto lock = lockDB();
 		if (!hasKey(group, key))
 			return false;
 
 		db[group].erase(key);
 
 		if (apply_default) {
-			const Glib::ustring combined {group + "." + key};
+			const Glib::ustring combined(group + "." + key);
 			if (registered.count(combined) == 1)
 				registered.at(combined).apply(*this);
 		}
@@ -206,69 +209,58 @@ namespace Reden {
 		if (!line.empty() && line[0] == '#')
 			return {"", ""};
 
-		Glib::ustring group, key, gk, value;
-		std::tie(gk, value) = parseKVPair(line);
-		std::tie(group, key) = parsePair(gk);
+		auto [gk,  value] = parseKVPair(line);
+		auto [group, key] = parsePair(gk);
 		insertAny(group, key, value);
 		return {group + "." + key, value};
 	}
 
 	void ConfigDB::applyAll(bool with_defaults) {
 		for (auto &pair: registered) {
-			Glib::ustring group, key;
-			std::tie(group, key) = parsePair(pair.first);
-			if (hasKey(group, key)) {
+			auto [group, key] = parsePair(pair.first);
+			if (hasKey(group, key))
 				pair.second.apply(*this, get(group, key));
-			} else if (with_defaults) {
+			else if (with_defaults)
 				pair.second.apply(*this);
-			}
 		}
 	}
 
 	bool ConfigDB::hasGroup(const Glib::ustring &group) const {
-		return db.count(group) > 0;
+		return 0 < db.count(group);
 	}
 
 	bool ConfigDB::hasKey(const Glib::ustring &group, const Glib::ustring &key) const {
-		return hasGroup(group) && db.at(group).count(key) > 0;
+		return hasGroup(group) && 0 < db.at(group).count(key);
 	}
 
 	bool ConfigDB::keyKnown(const Glib::ustring &group, const Glib::ustring &key) const {
-		return registered.count(group + "." + key) > 0;
+		return 0 < registered.count(group + "." + key);
 	}
 
 	ssize_t ConfigDB::keyCount(const Glib::ustring &group) const {
 		return hasGroup(group)? db.at(group).size() : -1;
 	}
 
-	ConfigDB::GroupMap ConfigDB::withDefaults() const {
+	ConfigDB::GroupMap ConfigDB::withDefaults() {
 		GroupMap copy {db};
-		for (const auto &gpair: registered) {
-			const DefaultConfigKey &def = gpair.second;
-
-			Glib::ustring group, key;
-			const Glib::ustring &combined = gpair.first;
-			std::tie(group, key) = parsePair(combined);
-
-			copy[group].insert({key, def.defaultValue});
+		{
+			auto lock = lockDB();
+			for (const auto &[combined, def]: registered) {
+				auto [group, key] = parsePair(combined);
+				copy[group].insert({key, def.defaultValue});
+			}
 		}
-
 		return copy;
 	}
 
-	ConfigDB::operator Glib::ustring() const {
+	ConfigDB::operator Glib::ustring() {
 		std::ostringstream out;
-		for (const auto &gpair: db) {
-			const Glib::ustring &group = gpair.first;
-			const SubMap &sub = gpair.second;
-
-			for (const auto &spair: sub) {
-				const Glib::ustring &key = spair.first;
-				const Value &value = spair.second;
-				out << group << "." << key << "=" << escape(value) << "\n";
-			}
+		{
+			auto lock = lockDB();
+			for (const auto &[group, sub]: db)
+				for (const auto &[key, value]: sub)
+					out << group << "." << key << "=" << escape(value) << "\n";
 		}
-
 		return out.str();
 	}
 }

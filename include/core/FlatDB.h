@@ -2,6 +2,7 @@
 
 #include <gtkmm.h>
 #include <filesystem>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -9,6 +10,9 @@
 
 namespace Reden {
 	class FlatDB {
+		private:
+			std::recursive_mutex mutex;
+
 		protected:
 			/** The path where the database will be read from and written to. */
 			std::filesystem::path filepath;
@@ -28,6 +32,8 @@ namespace Reden {
 
 		public:
 			virtual ~FlatDB() {}
+
+			std::unique_lock<std::recursive_mutex> lockDB() { return std::unique_lock(mutex); }
 
 			/** Applies a line of read input. */
 			virtual std::pair<Glib::ustring, Glib::ustring> applyLine(const Glib::ustring &) = 0;
@@ -57,7 +63,7 @@ namespace Reden {
 			void readDB(bool apply = true, bool clear = true);
 
 			/** Stringifies the database. */
-			virtual operator Glib::ustring() const = 0;
+			virtual operator Glib::ustring() = 0;
 
 			/** Creates a config directory in the user's home directory if one doesn't
 			 *  already exist. Returns true if the directory had to be created. */

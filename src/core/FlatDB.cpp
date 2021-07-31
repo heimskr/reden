@@ -109,7 +109,8 @@ namespace Reden {
 		std::filesystem::path config_path =
 			name[0] == '/'? std::filesystem::path(name) : Util::getHome() / std::string(name);
 		if (!std::filesystem::exists(config_path)) {
-			std::filesystem::create_directory(config_path);
+			if (!std::filesystem::create_directories(config_path))
+				throw std::runtime_error("Couldn't create directories");
 			return true;
 		}
 
