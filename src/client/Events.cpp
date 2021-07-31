@@ -60,9 +60,12 @@ namespace Reden {
 				});
 			} else if (ev->isUser()) {
 				auto user = ev->speaker;
-				window.queue([this, content, user] {
+				auto speaker = user;
+				if (user->isSelf())
+					user = ev->getUser(ev->server);
+				window.queue([this, content, user, speaker] {
 					window.box.addUser(user.get(), false);
-					window.box[user].addMessage(user->name, content);
+					window.box[user].addMessage(speaker->name, content);
 				});
 			}
 		});
