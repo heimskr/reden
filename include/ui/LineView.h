@@ -29,7 +29,7 @@ namespace Reden {
 			LineView(PingPong::User *user): parent(user), type(ParentType::User) {}
 
 			LineView & add(const Glib::ustring &text, bool pangoize = true);
-			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message);
+			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self = false);
 			LineView & joined(const Glib::ustring &name, const Glib::ustring &channel);
 			LineView & mode(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                const PingPong::ModeSet &);
@@ -51,7 +51,7 @@ namespace Reden {
 
 		private:
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
-			                           modesTag, userTag, topicTag, asteriskTag;
+			                           modesTag, userTag, topicTag, asteriskTag, selfTag;
 			bool alive = true;
 			/** Whether the LineView was scrolled to the bottom at the beginning of the last call to start(). */
 			bool wasAtEnd = false;

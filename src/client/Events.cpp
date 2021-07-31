@@ -55,17 +55,19 @@ namespace Reden {
 			if (ev->isChannel()) {
 				auto channel = ev->server->getChannel(ev->where, true);
 				const std::string name = channel->withHat(ev->speaker);
-				window.queue([this, content, channel, name] {
-					window.box[channel].addMessage(name, content);
+				bool is_self = ev->speaker->isSelf();
+				window.queue([this, content, channel, name, is_self] {
+					window.box[channel].addMessage(name, content, is_self);
 				});
 			} else if (ev->isUser()) {
 				auto user = ev->speaker;
 				auto speaker = user;
-				if (user->isSelf())
+				bool is_self = user->isSelf();
+				if (is_self)
 					user = ev->getUser(ev->server);
-				window.queue([this, content, user, speaker] {
+				window.queue([this, content, user, speaker, is_self] {
 					window.box.addUser(user.get(), false);
-					window.box[user].addMessage(speaker->name, content);
+					window.box[user].addMessage(speaker->name, content, is_self);
 				});
 			}
 		});

@@ -26,6 +26,7 @@ namespace Reden {
 		    userTag = buffer.create_tag("user"); // For things like mode lines
 		   topicTag = buffer.create_tag("topic");
 		asteriskTag = buffer.create_tag("asterisk");
+		    selfTag = buffer.create_tag("self");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
 		   timeTag->property_font() = "Monospace";
@@ -34,6 +35,7 @@ namespace Reden {
 		setBold(channelTag);
 		setBold(userTag);
 		setBold(topicTag);
+		setBold(selfTag);
 		endMark = get_buffer()->create_mark(get_buffer()->end(), false);
 	}
 
@@ -46,7 +48,7 @@ namespace Reden {
 		return scroll();
 	}
 
-	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message) {
+	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self) {
 		start();
 
 		if (Util::isAction(message)) {
@@ -57,7 +59,12 @@ namespace Reden {
 			return scroll();
 		}
 
-		append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
+		append("<", "name_bracket");
+		if (is_self)
+			append(name, "self");
+		else
+			append(name);
+		append(">", "name_bracket").append(" ");
 		get_buffer()->insert_markup(get_buffer()->end(), irc2pango(message));
 		return scroll();
 	}
