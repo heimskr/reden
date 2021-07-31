@@ -51,12 +51,18 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
+			const std::string content = ev->content;
 			if (ev->isChannel()) {
-				const std::string content = ev->content;
 				auto channel = ev->server->getChannel(ev->where, true);
 				const std::string name = channel->withHat(ev->speaker);
 				window.queue([this, content, channel, name] {
 					window.box[channel].addMessage(name, content);
+				});
+			} else if (ev->isUser()) {
+				auto user = ev->speaker;
+				window.queue([this, content, user] {
+					window.box.addUser(user.get(), false);
+					window.box[user].addMessage(user->name, content);
 				});
 			}
 		});

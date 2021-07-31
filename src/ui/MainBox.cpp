@@ -87,7 +87,7 @@ namespace Reden {
 
 	void MainBox::addChannel(PingPong::Channel *channel, bool focus) {
 		if (serverRows.count(channel->server) == 0)
-			addServer(channel->server);
+			addServer(channel->server, false);
 		auto iter = serverRows.at(channel->server);
 		auto row = serverModel->append(iter->children());
 		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
@@ -96,6 +96,21 @@ namespace Reden {
 		channelRows.emplace(channel, row);
 		if (focus)
 			focusView(channel, channel);
+	}
+
+	void MainBox::addUser(PingPong::User *user, bool focus) {
+		if (userRows.count(user) != 0)
+			return;
+		if (serverRows.count(user->server) == 0)
+			addServer(user->server, false);
+		auto iter = serverRows.at(user->server);
+		auto row = serverModel->append(iter->children());
+		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
+		(*row)[columns.name] = user->name;
+		(*row)[columns.pointer] = user;
+		userRows.emplace(user, row);
+		if (focus)
+			focusView(user, user);
 	}
 
 	void MainBox::eraseServer(PingPong::Server *server) {
@@ -127,14 +142,14 @@ namespace Reden {
 					userSets[&channel].insert(user->name);
 				else
 					userSets[&channel].insert(user->name);
-				if (userRows.count(user->name) == 0) {
+				if (presentUserRows.count(user->name) == 0) {
 					auto row = userModel->append();
-					userRows.emplace(user->name, row);
+					presentUserRows.emplace(user->name, row);
 					(*row)[columns.name] = channel.withHat(user, true);
 					(*row)[columns.pointer] = &channel;
 					sort = true;
 				} else {
-					auto row = userRows.at(user->name);
+					auto row = presentUserRows.at(user->name);
 					Glib::ustring new_name = channel.withHat(user, true);
 					if (Glib::ustring((*row)[columns.name]) != new_name) {
 						(*row)[columns.name] = new_name;
@@ -192,7 +207,9 @@ namespace Reden {
 	}
 
 	PingPong::User * MainBox::activeUser() {
-		// User windows aren't implemented yet.
+		PingPong::User *user = reinterpret_cast<PingPong::User *>(activeView);
+		if (userRows.count(user) != 0)
+			return user;
 		return nullptr;
 	}
 
@@ -248,13 +265,24 @@ namespace Reden {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
 			serverTree.get_selection()->select(channelRows.at(channel));
-			userRows.clear();
+			presentUserRows.clear();
 			userModel->clear();
 			for (const std::string &user: userSets[channel]) {
 				auto row = userModel->append();
-				userRows[user] = row;
+				presentUserRows[user] = row;
 				(*row)[columns.name] = static_cast<char>(channel->getHats(user).highest()) + user;
 				(*row)[columns.pointer] = channel;
+			}
+		} else if (userRows.count(reinterpret_cast<PingPong::User *>(ptr)) != 0) {
+			PingPong::User *user = reinterpret_cast<PingPong::User *>(ptr);
+			serverTree.get_selection()->select(userRows.at(user));
+			presentUserRows.clear();
+			userModel->clear();
+			for (const std::string &user_str: {user->server->getSelf()->name, user->name}) {
+				auto row = userModel->append();
+				presentUserRows[user_str] = row;
+				(*row)[columns.name] = user_str;
+				(*row)[columns.pointer] = user;
 			}
 		}
 	}
