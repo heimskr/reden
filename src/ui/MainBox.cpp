@@ -86,6 +86,8 @@ namespace Reden {
 	}
 
 	void MainBox::addChannel(PingPong::Channel *channel, bool focus) {
+		if (channelRows.count(channel) != 0)
+			return;
 		if (serverRows.count(channel->server) == 0)
 			addServer(channel->server, false);
 		auto iter = serverRows.at(channel->server);
