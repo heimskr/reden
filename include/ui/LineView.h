@@ -31,6 +31,7 @@ namespace Reden {
 			LineView & add(const Glib::ustring &text, bool pangoize = true);
 			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self = false);
 			LineView & joined(const Glib::ustring &name, const Glib::ustring &channel);
+			LineView & parted(const Glib::ustring &name, const Glib::ustring &channel, const Glib::ustring &reason);
 			LineView & mode(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                const PingPong::ModeSet &);
 			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
@@ -61,8 +62,9 @@ namespace Reden {
 			static Glib::ustring makeTimestamp();
 
 			LineView & start();
-			LineView & append(const Glib::ustring &text, const Glib::ustring &tag_name);
-			LineView & append(const Glib::ustring &text);
+			LineView & append(const Glib::ustring &, const Glib::ustring &tag_name);
+			LineView & append(const Glib::ustring &);
+			LineView & appendMarkup(const Glib::ustring &);
 			LineView & addNewline();
 			LineView & addTime();
 			LineView & addStar();

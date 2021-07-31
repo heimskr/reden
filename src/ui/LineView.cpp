@@ -16,7 +16,7 @@ namespace Reden {
 		set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
 		auto &buffer = *get_buffer();
 		    timeTag = buffer.create_tag("timestamp");
-		 bracketTag = buffer.create_tag("name_bracket");
+		 bracketTag = buffer.create_tag("bracket");
 		    nameTag = buffer.create_tag("name");
 		 messageTag = buffer.create_tag("message");
 		   plainTag = buffer.create_tag("plain");
@@ -42,7 +42,7 @@ namespace Reden {
 	LineView & LineView::add(const Glib::ustring &text, bool pangoize) {
 		start();
 		if (pangoize)
-			get_buffer()->insert_markup(get_buffer()->end(), irc2pango(text));
+			appendMarkup(irc2pango(text));
 		else
 			append(text, "plain");
 		return scroll();
@@ -54,23 +54,27 @@ namespace Reden {
 		if (Util::isAction(message)) {
 			Glib::ustring copy = message;
 			Util::trimAction(copy);
-			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ");
-			get_buffer()->insert_markup(get_buffer()->end(), irc2pango(copy));
+			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").appendMarkup(irc2pango(copy));
 			return scroll();
 		}
 
-		append("<", "name_bracket");
+		append("<", "bracket");
 		if (is_self)
 			append(name, "self");
 		else
 			append(name);
-		append(">", "name_bracket").append(" ");
-		get_buffer()->insert_markup(get_buffer()->end(), irc2pango(message));
-		return scroll();
+		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
 	}
 
 	LineView & LineView::joined(const Glib::ustring &name, const Glib::ustring &channel) {
 		return start().addStar().append(name, "name").append(" joined ").append(channel, "channel").scroll();
+	}
+
+	LineView & LineView::parted(const Glib::ustring &name, const Glib::ustring &channel, const Glib::ustring &reason) {
+		start().addStar().append(name, "name").append(" left ").append(channel, "channel");
+		if (!reason.empty())
+			append(" ").append("[", "bracket").appendMarkup(irc2pango(reason)).append("]", "bracket");
+		return scroll();
 	}
 
 	LineView & LineView::mode(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
@@ -144,6 +148,11 @@ namespace Reden {
 
 	LineView & LineView::append(const Glib::ustring &text) {
 		get_buffer()->insert(get_buffer()->end(), text);
+		return *this;
+	}
+
+	LineView & LineView::appendMarkup(const Glib::ustring &markup) {
+		get_buffer()->insert_markup(get_buffer()->end(), markup);
 		return *this;
 	}
 

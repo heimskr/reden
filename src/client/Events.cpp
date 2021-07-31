@@ -25,8 +25,8 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::ModeEvent>([this](PingPong::ModeEvent *ev) {
-			auto who = ev->who;
-			auto modeset = ev->modeSet;
+			const auto &who = ev->who;
+			const auto &modeset = ev->modeSet;
 			if (auto channel = ev->getChannel(ev->server))
 				window.queue([this, channel, who, modeset] {
 					window.box[channel].mode(channel, who, modeset);
@@ -35,17 +35,24 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::NamesUpdatedEvent>([this](PingPong::NamesUpdatedEvent *ev) {
-			auto channel = ev->channel;
+			const auto &channel = ev->channel;
 			window.queue([this, channel] {
 				window.box.updateChannel(*channel);
 			});
 		});
 
 		PingPong::Events::listen<PingPong::PartEvent>([this](PingPong::PartEvent *ev) {
+			const auto &channel = ev->channel;
 			if (ev->who->isSelf()) {
-				auto channel = ev->channel;
 				window.queue([this, channel] {
 					window.box.eraseChannel(channel.get());
+				});
+			} else {
+				const auto &name = ev->who->name;
+				const auto &reason = ev->content;
+				window.queue([this, channel, name, reason] {
+					window.box.addChannel(channel.get(), false);
+					window.box[channel].parted(name, channel->name, reason);
 				});
 			}
 		});
