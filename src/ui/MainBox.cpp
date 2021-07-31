@@ -124,6 +124,23 @@ namespace Reden {
 	void MainBox::eraseServer(PingPong::Server *server) {
 		if (serverRows.count(server) == 0)
 			return;
+
+		std::vector<PingPong::Channel *> remove_channels;
+		remove_channels.reserve(channelRows.size());
+		for (auto &[channel, iter]: channelRows)
+			if (channel->server == server)
+				remove_channels.push_back(channel);
+		for (PingPong::Channel *channel: remove_channels)
+				eraseChannel(channel);
+
+		std::vector<PingPong::User *> remove_users;
+		remove_users.reserve(userRows.size());
+		for (auto &[user, iter]: userRows)
+			if (user->server == server)
+				remove_users.push_back(user);
+		for (PingPong::User *user: remove_users)
+			eraseUser(user);
+
 		serverModel->erase(serverRows.at(server));
 		serverRows.erase(server);
 	}
@@ -133,6 +150,13 @@ namespace Reden {
 			return;
 		serverModel->erase(channelRows.at(channel));
 		channelRows.erase(channel);
+	}
+
+	void MainBox::eraseUser(PingPong::User *user) {
+		if (userRows.count(user) == 0)
+			return;
+		serverModel->erase(userRows.at(user));
+		userRows.erase(user);
 	}
 
 	void MainBox::addStatus(const std::string &line, bool pangoize) {
@@ -223,6 +247,10 @@ namespace Reden {
 
 	void MainBox::log(const Glib::ustring &string, bool pangoize) {
 		active().add(string, pangoize);
+	}
+
+	bool MainBox::hasLineView(void *ptr) const {
+		return views.count(ptr) != 0;
 	}
 
 	LineView & MainBox::getLineView(void *ptr) {

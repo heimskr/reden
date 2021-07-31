@@ -6,6 +6,7 @@
 #include "pingpong/events/NamesUpdated.h"
 #include "pingpong/events/Part.h"
 #include "pingpong/events/Privmsg.h"
+#include "pingpong/events/Quit.h"
 #include "pingpong/events/Raw.h"
 #include "pingpong/events/ServerStatus.h"
 #include "pingpong/events/Topic.h"
@@ -60,16 +61,16 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
 			const std::string content = ev->content;
 			if (ev->isChannel()) {
-				auto channel = ev->server->getChannel(ev->where, true);
+				const auto channel = ev->server->getChannel(ev->where, true);
 				const std::string name = channel->withHat(ev->speaker);
-				bool is_self = ev->speaker->isSelf();
+				const bool is_self = ev->speaker->isSelf();
 				window.queue([this, content, channel, name, is_self] {
 					window.box[channel].addMessage(name, content, is_self);
 				});
 			} else if (ev->isUser()) {
 				auto user = ev->speaker;
 				auto speaker = user;
-				bool is_self = user->isSelf();
+				const bool is_self = user->isSelf();
 				if (is_self)
 					user = ev->getUser(ev->server);
 				window.queue([this, content, user, speaker, is_self] {
@@ -79,8 +80,26 @@ namespace Reden {
 			}
 		});
 
+		PingPong::Events::listen<PingPong::QuitEvent>([this](PingPong::QuitEvent *ev) {
+			const auto &server = ev->server;
+			if (ev->who->isSelf()) {
+				window.queue([this, server] {
+					window.box.eraseServer(server);
+				});
+			} else {
+				const auto &user = ev->who;
+				const auto &reason = ev->content;
+				window.queue([this, server, user, reason] {
+					for (const std::weak_ptr<PingPong::Channel> &weak_channel: user->channels)
+						if (auto channel = weak_channel.lock())
+							if (window.box.hasLineView(channel.get()))
+								window.box[channel.get()].quit(user->name, reason);
+				});
+			}
+		});
+
 		PingPong::Events::listen<PingPong::RawInEvent>([this](PingPong::RawInEvent *ev) {
-			auto server = ev->server;
+			const auto &server = ev->server;
 			auto raw = ev->rawIn;
 			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
 				raw.pop_back();
@@ -91,7 +110,7 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::RawOutEvent>([this](PingPong::RawOutEvent *ev) {
-			auto server = ev->server;
+			const auto &server = ev->server;
 			auto raw = ev->rawOut;
 			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
 				raw.pop_back();

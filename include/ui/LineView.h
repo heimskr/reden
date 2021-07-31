@@ -32,6 +32,7 @@ namespace Reden {
 			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self = false);
 			LineView & joined(const Glib::ustring &name, const Glib::ustring &channel);
 			LineView & parted(const Glib::ustring &name, const Glib::ustring &channel, const Glib::ustring &reason);
+			LineView & quit(const Glib::ustring &name, const Glib::ustring &reason);
 			LineView & mode(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                const PingPong::ModeSet &);
 			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,

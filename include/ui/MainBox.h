@@ -31,6 +31,7 @@ namespace Reden {
 			void addUser(PingPong::User *, bool focus = false);
 			void eraseServer(PingPong::Server *);
 			void eraseChannel(PingPong::Channel *);
+			void eraseUser(PingPong::User *);
 			void addStatus(const std::string &, bool pangoize = true);
 			void updateChannel(PingPong::Channel &);
 			Glib::ustring getInput() const;
@@ -44,6 +45,7 @@ namespace Reden {
 			PingPong::User * activeUser();
 			void log(const Glib::ustring &, bool pangoize = false);
 
+			bool hasLineView(void *ptr) const;
 			LineView & getLineView(void *ptr);
 			LineView & getLineView(PingPong::Channel *);
 			LineView & getLineView(PingPong::Server *);

@@ -77,6 +77,13 @@ namespace Reden {
 		return scroll();
 	}
 
+	LineView & LineView::quit(const Glib::ustring &name, const Glib::ustring &reason) {
+		start().addStar().append(name, "name").append(" quit");
+		if (!reason.empty())
+			append(" ").append("[", "bracket").appendMarkup(irc2pango(reason)).append("]", "bracket");
+		return scroll();
+	}
+
 	LineView & LineView::mode(std::shared_ptr<PingPong::Channel> channel, std::shared_ptr<PingPong::User> who,
 	                          const PingPong::ModeSet &modeset) {
 		start().addStar();
