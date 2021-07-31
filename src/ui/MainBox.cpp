@@ -86,8 +86,11 @@ namespace Reden {
 	}
 
 	void MainBox::addChannel(PingPong::Channel *channel, bool focus) {
-		if (channelRows.count(channel) != 0)
+		if (channelRows.count(channel) != 0) {
+			if (focus)
+				focusView(channel);
 			return;
+		}
 		if (serverRows.count(channel->server) == 0)
 			addServer(channel->server, false);
 		auto iter = serverRows.at(channel->server);
@@ -101,8 +104,11 @@ namespace Reden {
 	}
 
 	void MainBox::addUser(PingPong::User *user, bool focus) {
-		if (userRows.count(user) != 0)
+		if (userRows.count(user) != 0) {
+			if (focus)
+				focusView(user);
 			return;
+		}
 		if (serverRows.count(user->server) == 0)
 			addServer(user->server, false);
 		auto iter = serverRows.at(user->server);
