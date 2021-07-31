@@ -36,7 +36,7 @@ namespace Reden {
 	}
 
 	Glib::ustring FlatDB::parseString(Glib::ustring value) {
-		formicine::util::trim(value);
+		value = formicine::util::trim(std::string(value));
 		const size_t vlength = value.length();
 
 		// Special case: an empty value represents an empty string, same as a pair of double quotes.
@@ -53,9 +53,7 @@ namespace Reden {
 	}
 
 	std::pair<Glib::ustring, Glib::ustring> FlatDB::parseStringLine(const Glib::ustring &str) {
-		Glib::ustring key, value;
-		std::tie(key, value) = parseKVPair(str);
-
+		auto [key, value] = parseKVPair(str);
 		return {key, parseString(value)};
 	}
 
