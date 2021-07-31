@@ -48,7 +48,7 @@ namespace Reden {
 			Glib::ustring copy = message;
 			Util::trimAction(copy);
 			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ");
-			get_buffer()->insert_markup(get_buffer()->end(), irc2pango(message));
+			get_buffer()->insert_markup(get_buffer()->end(), irc2pango(copy));
 			return scroll();
 		}
 
