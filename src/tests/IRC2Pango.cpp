@@ -14,6 +14,8 @@ namespace Reden::Tests {
 			{"\x02" "Foo", "<span weight=\"bold\">Foo</span>"},
 			{"\x02" "Foo\x02", "<span weight=\"bold\">Foo</span>"},
 			{"\x02" "Foo\x03", "<span weight=\"bold\">Foo</span>"},
+			{"\x02\x03\x02\x03\x03\x02", ""},
+			{"\x03" "04Foo \x02" "Bar\x02 Baz \x03" "08 Quux\x03", "<span color=\"red\">Foo </span><span weight=\"bold\" color=\"red\">Bar</span><span color=\"red\"> Baz </span><span color=\"yellow\"> Quux</span>"},
 		};
 
 		if (tests.empty()) {
