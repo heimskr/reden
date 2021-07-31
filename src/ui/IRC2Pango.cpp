@@ -28,6 +28,8 @@ namespace Reden {
 			Glib::ustring out = "<span";
 			if (bold)
 				out += " weight=\"bold\"";
+			if (underlined)
+				out += " underline=\"single\"";
 			if (0 <= color && color < 99)
 				out += " color=\"" + colorNames[color] + "\"";
 			return out + ">";
@@ -38,7 +40,7 @@ namespace Reden {
 		using Glib::Markup::escape_text;
 		enum class State {Normal, Color};
 
-		for (gunichar ch: {'\x02', '\x03'})
+		for (gunichar ch: {'\x02', '\x03', '\x1f'})
 			if (std::count(irc.begin(), irc.end(), ch) % 2 == 1)
 				irc.push_back(ch);
 
@@ -93,6 +95,11 @@ namespace Reden {
 							format.color = -1;
 							out += format;
 						}
+						break;
+					case '\x1f':
+						flush_buffer();
+						format.underlined = !format.underlined;
+						out += format;
 						break;
 					default:
 						text_buffer.push_back(ch);
