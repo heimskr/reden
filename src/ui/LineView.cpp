@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "core/Util.h"
+#include "ui/IRC2Pango.h"
 #include "ui/LineView.h"
 #include "pingpong/core/Channel.h"
 
@@ -46,12 +47,14 @@ namespace Reden {
 		if (Util::isAction(message)) {
 			Glib::ustring copy = message;
 			Util::trimAction(copy);
-			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").append(copy, "action");
+			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ");
+			get_buffer()->insert_markup(get_buffer()->end(), irc2pango(message));
 			return scroll();
 		}
 
 		append("<", "name_bracket").append(name, "name").append(">", "name_bracket").append(" ");
-		return append(message, "message").scroll();
+		get_buffer()->insert_markup(get_buffer()->end(), irc2pango(message));
+		return scroll();
 	}
 
 	LineView & LineView::joined(const Glib::ustring &name, const Glib::ustring &channel) {
