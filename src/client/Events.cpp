@@ -95,9 +95,6 @@ namespace Reden {
 		PingPong::Events::listen<PingPong::ServerStatusEvent>([this](PingPong::ServerStatusEvent *ev) {
 			callInQueue(ev->server, ev->server->getStatus());
 
-			if (ev->server->getStatus() == PingPong::Server::Stage::Ready)
-				window.box.addStatus("Connected to " + ev->server->id + ".");
-
 			switch (ev->server->getStatus()) {
 				case PingPong::Server::Stage::Ready: {
 					auto server = ev->server;
