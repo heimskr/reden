@@ -88,7 +88,7 @@ namespace Reden {
 	void Client::init() {
 		addEvents();
 		addCommands();
-		config.ensureDB("config");
+		config.setPath("config");
 	}
 
 	std::shared_ptr<PingPong::IRC> Client::irc() const {
