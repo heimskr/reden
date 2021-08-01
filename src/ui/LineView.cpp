@@ -60,11 +60,23 @@ namespace Reden {
 				}
 		});
 		add_controller(click);
-		// motion = Gtk::EventControllerMotion::create();
-		// motion->signal_motion().connect([this](double, double) {
-		// 	set_cursor("pointer");
-		// }, false);
-		// add_controller(motion);
+		motion = Gtk::EventControllerMotion::create();
+		motion->signal_motion().connect([this](double x, double y) {
+			Gtk::TextBuffer::const_iterator iter;
+			int trailing, bx, by;
+			window_to_buffer_coords(Gtk::TextWindowType::TEXT, x, y, bx, by);
+			if (!get_iter_at_position(iter, trailing, bx, by)) {
+				set_cursor("text");
+				return;
+			}
+			for (auto &tag: iter.get_tags())
+				if (tag->property_name() == "link") {
+					set_cursor("pointer");
+					return;
+				}
+			set_cursor("text");
+		});
+		add_controller(motion);
 	}
 
 	LineView & LineView::add(const Glib::ustring &text, bool pangoize) {
