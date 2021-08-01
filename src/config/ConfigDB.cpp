@@ -142,6 +142,22 @@ namespace Reden {
 		return get(pair.first, pair.second);
 	}
 
+	Glib::ustring & ConfigDB::getString(const Glib::ustring &group, const Glib::ustring &key) {
+		return std::get<Glib::ustring>(get(group, key));
+	}
+
+	long & ConfigDB::getLong(const Glib::ustring &group, const Glib::ustring &key) {
+		return std::get<long>(get(group, key));
+	}
+
+	double & ConfigDB::getDouble(const Glib::ustring &group, const Glib::ustring &key) {
+		return std::get<double>(get(group, key));
+	}
+
+	bool & ConfigDB::getBool(const Glib::ustring &group, const Glib::ustring &key) {
+		return std::get<bool>(get(group, key));
+	}
+
 	bool ConfigDB::insert(const Glib::ustring &group, const Glib::ustring &key, const Value &value, bool save) {
 		auto lock = lockDB();
 		ensureKnown(group, key);
@@ -239,6 +255,40 @@ namespace Reden {
 
 	ssize_t ConfigDB::keyCount(const Glib::ustring &group) const {
 		return hasGroup(group)? db.at(group).size() : -1;
+	}
+
+	std::unordered_set<Glib::ustring> ConfigDB::allKeys(const Glib::ustring &group) const {
+		std::unordered_set<Glib::ustring> out;
+		bool has_nondefault = false;
+
+		if (hasGroup(group)) {
+			has_nondefault = true;
+			for (const auto &[name, value]: db.at(group))
+				out.insert(name);
+		}
+
+		for (const auto &[name, value]: registered) {
+			auto [registered_group, key] = parsePair(name);
+			if (registered_group == group)
+				out.insert(key);
+		}
+
+		if (!has_nondefault && out.empty())
+			throw std::runtime_error("Unknown group: " + group);
+
+		return out;
+	}
+
+	std::unordered_set<Glib::ustring> ConfigDB::allGroups() const {
+		std::unordered_set<Glib::ustring> out;
+
+		for (const auto &[name, submap]: db)
+			out.insert(name);
+
+		for (const auto &[combined, def]: registered)
+			out.insert(parsePair(combined).first);
+
+		return out;
 	}
 
 	ConfigDB::GroupMap ConfigDB::withDefaults() {

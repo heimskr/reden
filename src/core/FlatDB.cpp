@@ -67,6 +67,8 @@ namespace Reden {
 	}
 
 	void FlatDB::readDB(bool apply, bool clear) {
+		auto lock = lockDB();
+
 		if (clear)
 			clearAll();
 

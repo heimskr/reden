@@ -23,11 +23,14 @@ namespace Reden {
 	class Client {
 		public:
 			std::unordered_map<std::string, CompletionState> completionStates;
+			ConfigDB config;
 			ConfigCache cache;
 
 			Client() = delete;
 			Client(const Client &) = delete;
 			Client(RedenWindow &window_);
+
+			~Client();
 
 			Client & operator=(const Client &) = delete;
 
@@ -62,7 +65,6 @@ namespace Reden {
 		private:
 			RedenWindow &window;
 			CommandCompleter completer;
-			ConfigDB configs;
 			std::multimap<Glib::ustring, Command> commandHandlers;
 
 // client/Commands.cpp

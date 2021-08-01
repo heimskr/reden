@@ -222,7 +222,7 @@ namespace Reden {
 			}
 		}
 
-		const Glib::ustring &suffix = std::get<Glib::ustring>(configs.get("completion", "ping_suffix"));
+		const Glib::ustring &suffix = config.getString("completion", "ping_suffix");
 		formicine::util::remove_suffix(word, suffix);
 
 		std::deque<Glib::ustring> items;

@@ -4,12 +4,14 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <variant>
 
 #include "config/KeyConfig.h"
 #include "config/Validation.h"
 #include "core/FlatDB.h"
+#include "core/Ustring.h"
 
 namespace Reden {
 	class Client;
@@ -91,7 +93,13 @@ namespace Reden {
 			/** Returns a value from the config database. If an unknown group+key pair is given and not present in the
 			 *  database, a std::out_of_range exception is thrown. */
 			Value & get(const Glib::ustring &group, const Glib::ustring &key);
+
 			Value & getPair(const std::pair<Glib::ustring, Glib::ustring> &pair);
+
+			Glib::ustring & getString(const Glib::ustring &group, const Glib::ustring &key);
+			long & getLong(const Glib::ustring &group, const Glib::ustring &key);
+			double & getDouble(const Glib::ustring &group, const Glib::ustring &key);
+			bool & getBool(const Glib::ustring &group, const Glib::ustring &key);
 
 			/** Returns whether a group name is present in the config database. */
 			bool hasGroup(const Glib::ustring &) const;
@@ -105,6 +113,13 @@ namespace Reden {
 			/** Returns the number of keys present under a group. If the group doesn't exist in the config database, the
 			 *  function returns -1. */
 			ssize_t keyCount(const Glib::ustring &group) const;
+
+			/** Returns all the known keys for a group, including any defaults. Throws std::runtime_error if the group
+			 *  doesn't exist. */
+			std::unordered_set<Glib::ustring> allKeys(const Glib::ustring &group) const;
+
+			/** Returns all the known group names, including any defaults. */
+			std::unordered_set<Glib::ustring> allGroups() const;
 
 			/** Returns a copy of the config database with all default keys filled in if not already present. */
 			GroupMap withDefaults();
