@@ -50,6 +50,7 @@ namespace Reden {
 		chatEntry.signal_activate().connect(sigc::mem_fun(*this, &MainBox::entryActivated));
 		chatEntry.grab_focus();
 		addStatusRow();
+		serverTree.signal_cursor_changed().connect(sigc::mem_fun(*this, &MainBox::serverCursorChanged));
 		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
 		keyController = Gtk::EventControllerKey::create();;
 		keyController->signal_key_pressed().connect(sigc::mem_fun(*this, &MainBox::keyPressed), false);
@@ -321,6 +322,11 @@ namespace Reden {
 				(*row)[columns.pointer] = user;
 			}
 		}
+	}
+
+	void MainBox::serverCursorChanged() {
+		if (auto iter = serverTree.get_selection()->get_selected())
+			focusView((*iter)[columns.pointer]);
 	}
 
 	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {

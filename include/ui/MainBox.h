@@ -112,6 +112,7 @@ namespace Reden {
 			void addStatusRow();
 			void focusView(void *);
 			void focusView(void *, LineView * &);
+			void serverCursorChanged();
 			void serverRowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			int compareUsers(const Gtk::TreeModel::const_iterator &, const Gtk::TreeModel::const_iterator &);
 			bool keyPressed(guint, guint, Gdk::ModifierType);
