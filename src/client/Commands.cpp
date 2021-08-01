@@ -13,6 +13,13 @@ namespace Reden {
 			window.box.active().clear();
 		});
 
+		add("close", 0, 0, false, [this](PingPong::Server *, const InputLine &) {
+			if (PingPong::User *user = window.box.activeUser())
+				window.box.eraseUser(user);
+			else
+				window.box.active().add("Can't close window.", false);
+		});
+
 		add("join", 1,  1, true, [this](PingPong::Server *server, const InputLine &il) {
 			const Glib::ustring &first = il.first();
 			waitForServer(server, PingPong::Server::Stage::Ready, [=]() {
