@@ -12,7 +12,6 @@ namespace Reden {
 	LineView::LineView(): Gtk::TextView() {
 		add_css_class("lineview");
 		set_editable(false);
-		set_cursor_visible(false);
 		set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
 		auto &buffer = *get_buffer();
 		    timeTag = buffer.create_tag("timestamp");
@@ -46,10 +45,26 @@ namespace Reden {
 				return;
 			std::cout << '\'' << Glib::ustring(1, iter.get_char()) << "'\n";
 
-			for (auto &tag: iter.get_tags())
+			for (auto &tag: iter.get_tags()) {
+				if (tag->property_name() == "timestamp") {
+					auto start = iter;
+					while (start && !start.starts_tag(timeTag))
+						--start;
+					auto end = iter;
+					while (end && !end.ends_tag(timeTag))
+						++end;
+					std::cout << "(" << get_buffer()->get_slice(start, end) << ")\n";
+					break;
+				}
 				std::cout << "tag[" << tag->property_name() << "]\n";
+			}
 		});
 		add_controller(click);
+		// motion = Gtk::EventControllerMotion::create();
+		// motion->signal_motion().connect([this](double, double) {
+		// 	set_cursor("pointer");
+		// }, false);
+		// add_controller(motion);
 	}
 
 	LineView & LineView::add(const Glib::ustring &text, bool pangoize) {
@@ -234,7 +249,10 @@ namespace Reden {
 			append(name, "self");
 		else
 			append(name);
-		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
+		append(">", "bracket").append(" ").appendMarkup(irc2pango(message));
+		// get_buffer()->apply_tag(
+
+		return scroll();
 	}
 
 	void LineView::setBold(Glib::RefPtr<Gtk::TextTag> tag) {
