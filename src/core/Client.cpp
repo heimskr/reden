@@ -90,4 +90,12 @@ namespace Reden {
 	std::shared_ptr<PingPong::IRC> Client::irc() const {
 		return window.irc;
 	}
+
+	void Client::noChannel() {
+		window.box.active().add("No active channel.", false);
+	}
+
+	void Client::noChannel(const std::string &channel) {
+		window.box.active().add(channel + ": no such channel.", false);
+	}
 }

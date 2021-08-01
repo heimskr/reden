@@ -60,6 +60,12 @@ namespace Reden {
 
 			std::shared_ptr<PingPong::IRC> irc() const;
 
+			/** Displays a "no such channel" message in the current view. */
+			void noChannel();
+
+			/** Displays a message indicating that a channel isn't valid. */
+			void noChannel(const std::string &channel);
+
 			void tabComplete();
 
 		private:
