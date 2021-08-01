@@ -13,6 +13,7 @@ namespace Reden {
 		add_css_class("lineview");
 		set_editable(false);
 		set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
+		set_cursor_visible(false);
 		auto &buffer = *get_buffer();
 		    timeTag = buffer.create_tag("timestamp");
 		 bracketTag = buffer.create_tag("bracket");
@@ -26,7 +27,7 @@ namespace Reden {
 		   topicTag = buffer.create_tag("topic");
 		asteriskTag = buffer.create_tag("asterisk");
 		    selfTag = buffer.create_tag("self");
-			linkTag = buffer.create_tag("link");
+		    linkTag = buffer.create_tag("link");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
 		   linkTag->property_foreground() = "blue";
@@ -44,20 +45,18 @@ namespace Reden {
 			Gtk::TextBuffer::const_iterator iter;
 			int trailing, bx, by;
 			window_to_buffer_coords(Gtk::TextWindowType::TEXT, x, y, bx, by);
-			if (!get_iter_at_position(iter, trailing, bx, by))
-				return;
-			for (auto &tag: iter.get_tags())
-				if (tag->property_name() == "link") {
-					auto start = iter;
-					while (start && !start.starts_tag(linkTag))
-						--start;
-					auto end = iter;
-					while (end && !end.ends_tag(linkTag))
-						++end;
-					std::cout << "(" << get_buffer()->get_slice(start, end) << ")\n";
-					showURI(get_buffer()->get_slice(start, end));
-					break;
-				}
+			if (get_iter_at_position(iter, trailing, bx, by))
+				for (auto &tag: iter.get_tags())
+					if (tag->property_name() == "link") {
+						auto start = iter;
+						while (start && !start.starts_tag(linkTag))
+							--start;
+						auto end = iter;
+						while (end && !end.ends_tag(linkTag))
+							++end;
+						showURI(get_buffer()->get_slice(start, end));
+						break;
+					}
 		});
 		add_controller(click);
 		motion = Gtk::EventControllerMotion::create();
