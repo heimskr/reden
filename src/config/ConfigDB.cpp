@@ -41,7 +41,7 @@ namespace Reden {
 		if (std::holds_alternative<bool>(value))
 			return std::get<bool>(value)? "true" : "false";
 		if (std::holds_alternative<Glib::ustring>(value))
-			return Util::escape(std::get<Glib::ustring>(value));
+			return "\"" + Util::escape(std::get<Glib::ustring>(value)) + "\"";
 		throw std::invalid_argument("Configuration value holds invalid type");
 	}
 
@@ -170,7 +170,7 @@ namespace Reden {
 		if (is_registered) {
 			ValidationResult result = iter->second.validate(value);
 			if (result != ValidationResult::Valid)
-				throw ValidationFailure(result);
+				throw ValidationFailure(result, group, key);
 		}
 
 		if (sub.count(key) > 0) {
@@ -198,7 +198,7 @@ namespace Reden {
 			case ValueType::Bool:   return insert(group, key, {parseBool(value)}, save);
 			case ValueType::String: return insert(group, key, {ConfigDB::parseString(value)}, save);
 			default:
-				throw std::invalid_argument("Invalid value type");
+				throw std::invalid_argument("Invalid value type: " + std::to_string(static_cast<int>(type)));
 		}
 	}
 

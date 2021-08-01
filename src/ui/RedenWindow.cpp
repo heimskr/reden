@@ -42,7 +42,7 @@ namespace Reden {
 		client.init();
 
 		add_action("connect", Gio::ActionMap::ActivateSlot([this] {
-			auto *connect = new ConnectDialog("Connect", *this, true);
+			auto *connect = new ConnectDialog("Connect", *this, client, true);
 			dialog.reset(connect);
 			connect->signal_submit().connect(
 			[this](const Glib::ustring &hostname, const Glib::ustring &port_str, const Glib::ustring &nick,
