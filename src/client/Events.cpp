@@ -105,8 +105,10 @@ namespace Reden {
 						                               static_cast<int>(minute), static_cast<int>(second));
 					});
 				} else {
-					window.queue([this, content, channel, name, is_self] {
-						window.box[channel].addMessage(name, content, is_self);
+					const auto &line = ev->line;
+					window.queue([this, content, channel, name, is_self, line] {
+						window.box[channel].addMessage(name, content, is_self, line.time.hours(), line.time.minutes(),
+							line.time.seconds());
 					});
 				}
 			} else if (ev->isUser()) {
@@ -215,7 +217,6 @@ namespace Reden {
 	}
 
 	void Client::waitForServer(PingPong::Server *server, PingPong::Server::Stage stage, const Client::QueueFn &fn) {
-		std::cout << "waitForServer(server=" << server->statusString() << ", stage=" << static_cast<int>(stage) << ")\n";
 		if (server->getStatus() == stage)
 			fn();
 		else

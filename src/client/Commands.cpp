@@ -20,10 +20,8 @@ namespace Reden {
 		});
 
 		add("me", 1, -1, true, [&](PingPong::Server *, const InputLine &il) {
-			std::cout << "hello. /me\n";
 			const auto &active = window.box.active();
 			if (!active.isAlive()) {
-				std::cout << "oh no\n";
 				return;
 			}
 
@@ -32,8 +30,6 @@ namespace Reden {
 				PingPong::PrivmsgCommand(active.getChannel(), message).send();
 			else if (active.isUser())
 				PingPong::PrivmsgCommand(active.getUser(), message).send();
-			else
-				std::cout << "what!\n";
 		}, &completePlain);
 	}
 }

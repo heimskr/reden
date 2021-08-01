@@ -5,12 +5,12 @@ BUILDFLAGS := -g -O0
 endif
 
 COMPILER   ?= g++
-CPPFLAGS   := -Wall -Wextra -std=c++20 $(BUILDFLAGS) -Ipingpong/include
+CPPFLAGS   := -Wall -Wextra -std=c++20 $(BUILDFLAGS) -Ipingpong/include -Ipingpong/date/include
 PPSRC      := $(shell find pingpong/src -name \*.cpp)
 PPOBJ      := $(patsubst pingpong/src/%.cpp,pingpong/build/%.o,$(PPSRC))
 SOURCES    := $(shell find src -name \*.cpp) src/resources.cpp
 OBJECTS    := $(SOURCES:.cpp=.o)
-DEPS       := gtk4 gtkmm-4.0 openssl
+DEPS       := gtk4 gtkmm-4.0 openssl libcurl
 GTKFLAGS   := $(shell pkg-config --cflags $(DEPS))
 LDFLAGS    := -L. -lpingpong -pthread $(shell pkg-config --libs $(DEPS))
 OUTPUT     := reden
