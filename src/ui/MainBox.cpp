@@ -354,9 +354,27 @@ namespace Reden {
 		return 0;
 	}
 
-	bool MainBox::keyPressed(guint, guint keycode, Gdk::ModifierType) {
+	bool MainBox::keyPressed(guint, guint keycode, Gdk::ModifierType modifiers) {
 		if (keycode == 23 && chatEntry.get_focused()) { // tab
 			parent.client.tabComplete();
+			return true;
+		}
+
+		if (keycode == 111 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // up arrow
+			if (auto iter = serverTree.get_selection()->get_selected())
+				if (--iter) {
+					serverTree.get_selection()->select(iter);
+					serverCursorChanged();
+				}
+			return true;
+		}
+
+		if (keycode == 116 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // down arrow
+			if (auto iter = serverTree.get_selection()->get_selected())
+				if (++iter) {
+					serverTree.get_selection()->select(iter);
+					serverCursorChanged();
+				}
 			return true;
 		}
 
