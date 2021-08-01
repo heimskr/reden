@@ -39,6 +39,7 @@ namespace Reden {
 			                const PingPong::ModeSet &);
 			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                        const Glib::ustring &);
+			LineView & error(const Glib::ustring &, bool is_markup);
 
 			bool isAlive() const { return alive; }
 			bool is(ParentType type_) const { return type == type_; }
@@ -60,6 +61,7 @@ namespace Reden {
 			/** Whether the LineView was scrolled to the bottom at the beginning of the last call to start(). */
 			bool wasAtEnd = false;
 			Glib::RefPtr<Gtk::TextBuffer::Mark> endMark;
+			std::vector<std::unique_ptr<Gtk::Widget>> widgets;
 
 			static Glib::ustring makeTimestamp(int hour, int minute, int second);
 			static Glib::ustring makeTimestamp(time_t);

@@ -101,8 +101,22 @@ namespace Reden {
 		return scroll();
 	}
 
+	LineView & LineView::error(const Glib::ustring &text, bool is_markup) {
+		start();
+		auto &image = *widgets.emplace_back(new Gtk::Image(Gio::Icon::create("dialog-error")));
+		auto anchor = get_buffer()->create_child_anchor(get_buffer()->end());
+		add_child_at_anchor(image, anchor);
+		append(" ");
+		if (is_markup)
+			appendMarkup(text);
+		else
+			append(text);
+		return scroll();
+	}
+
 	void LineView::clear() {
 		get_buffer()->set_text("");
+		widgets.clear();
 	}
 
 	PingPong::Channel * LineView::getChannel() const {

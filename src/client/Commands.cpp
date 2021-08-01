@@ -17,7 +17,7 @@ namespace Reden {
 			if (PingPong::User *user = window.box.activeUser())
 				window.box.eraseUser(user);
 			else
-				window.box.active().add("Can't close window.", false);
+				window.box.active().error("Can't close window.", false);
 		});
 
 		add("join", 1,  1, true, [this](PingPong::Server *server, const InputLine &il) {
