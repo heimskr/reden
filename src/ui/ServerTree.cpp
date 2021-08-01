@@ -29,21 +29,25 @@ namespace Reden {
 
 		auto menu = Gio::Menu::create();
 		menu->append("_Disconnect", "popup.close");
+		menu->append("_Clear", "popup.clear");
 		popupMenuServer.set_parent(*this);
 		popupMenuServer.set_menu_model(menu);
 
 		menu = Gio::Menu::create();
 		menu->append("_Leave", "popup.close");
+		menu->append("_Clear", "popup.clear");
 		popupMenuChannel.set_parent(*this);
 		popupMenuChannel.set_menu_model(menu);
 
 		menu = Gio::Menu::create();
 		menu->append("_Close", "popup.close");
+		menu->append("C_lear", "popup.clear");
 		popupMenuUser.set_parent(*this);
 		popupMenuUser.set_menu_model(menu);
 
 		auto group = Gio::SimpleActionGroup::create();
 		group->add_action("close", sigc::mem_fun(*this, &ServerTree::close));
+		group->add_action("clear", sigc::mem_fun(*this, &ServerTree::clear));
 		insert_action_group("popup", group);
 	}
 
@@ -232,6 +236,11 @@ namespace Reden {
 			}
 	}
 
+	void ServerTree::clear() {
+		if (auto iter = get_selection()->get_selected())
+			signal_clear_requested_.emit((*iter)[columns.pointer]);
+	}
+
 	sigc::signal<void()> ServerTree::signal_status_focus_requested() {
 		return signal_status_focus_requested_;
 	}
@@ -254,5 +263,9 @@ namespace Reden {
 
 	sigc::signal<void(void *)> ServerTree::signal_erase_requested() {
 		return signal_erase_requested_;
+	}
+
+	sigc::signal<void(void *)> ServerTree::signal_clear_requested() {
+		return signal_clear_requested_;
 	}
 }

@@ -60,7 +60,8 @@ namespace Reden {
 		serverTree->signal_focus_requested().connect([this](void *ptr) {
 			focusView(ptr);
 		});
-		serverTree->signal_erase_requested().connect([this](void *ptr) { views.erase(ptr); });
+		serverTree->signal_erase_requested().connect([this](void *ptr) { views.erase(ptr);   });
+		serverTree->signal_clear_requested().connect([this](void *ptr) { views[ptr].clear(); });
 	}
 
 	Client & MainBox::client() {

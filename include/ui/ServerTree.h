@@ -41,6 +41,7 @@ namespace Reden {
 			sigc::signal<void(PingPong::User *)>       signal_user_focus_requested();
 			sigc::signal<void(void *)> signal_focus_requested();
 			sigc::signal<void(void *)> signal_erase_requested();
+			sigc::signal<void(void *)> signal_clear_requested();
 
 		private:
 			enum Type {Status, Server, Channel, User};
@@ -69,11 +70,13 @@ namespace Reden {
 			void rowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			void secondaryClicked(int, double, double);
 			void close();
+			void clear();
 			sigc::signal<void()> signal_status_focus_requested_;
 			sigc::signal<void(PingPong::Channel *)> signal_channel_focus_requested_;
 			sigc::signal<void(PingPong::Server *)>   signal_server_focus_requested_;
 			sigc::signal<void(PingPong::User *)>       signal_user_focus_requested_;
 			sigc::signal<void(void *)> signal_focus_requested_;
 			sigc::signal<void(void *)> signal_erase_requested_;
+			sigc::signal<void(void *)> signal_clear_requested_;
 	};
 }
