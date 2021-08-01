@@ -41,6 +41,7 @@ namespace Reden {
 		topicScrolled.set_margin(0);
 		topicLabel.set_margin_start(5);
 		topicLabel.set_margin_end(5);
+		topicLabel.set_selectable(true);
 		chatBox.append(topicScrolled);
 		chatBox.append(topicSeparator);
 		chatBox.append(chatScrolled);
