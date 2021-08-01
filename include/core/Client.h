@@ -30,8 +30,6 @@ namespace Reden {
 			Client(const Client &) = delete;
 			Client(RedenWindow &window_);
 
-			~Client();
-
 			Client & operator=(const Client &) = delete;
 
 			/** Adds a command handler, given a pair that signifies the name of the command as typed by the user plus a

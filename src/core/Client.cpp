@@ -7,10 +7,6 @@
 namespace Reden {
 	Client::Client(RedenWindow &window_): config(*this, true), window(window_), completer(*this) {}
 
-	Client::~Client() {
-		config.writeDB();
-	}
-
 	void Client::add(const Commands::Pair &p) {
 		commandHandlers.insert(p);
 		completionStates.insert({p.first, CompletionState(p.second.suggestors)});
