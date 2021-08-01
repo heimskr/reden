@@ -46,21 +46,18 @@ namespace Reden {
 			window_to_buffer_coords(Gtk::TextWindowType::TEXT, x, y, bx, by);
 			if (!get_iter_at_position(iter, trailing, bx, by))
 				return;
-			std::cout << '\'' << Glib::ustring(1, iter.get_char()) << "'\n";
-
-			for (auto &tag: iter.get_tags()) {
-				if (tag->property_name() == "timestamp") {
+			for (auto &tag: iter.get_tags())
+				if (tag->property_name() == "link") {
 					auto start = iter;
-					while (start && !start.starts_tag(timeTag))
+					while (start && !start.starts_tag(linkTag))
 						--start;
 					auto end = iter;
-					while (end && !end.ends_tag(timeTag))
+					while (end && !end.ends_tag(linkTag))
 						++end;
 					std::cout << "(" << get_buffer()->get_slice(start, end) << ")\n";
+					showURI(get_buffer()->get_slice(start, end));
 					break;
 				}
-				std::cout << "tag[" << tag->property_name() << "]\n";
-			}
 		});
 		add_controller(click);
 		// motion = Gtk::EventControllerMotion::create();
@@ -290,6 +287,10 @@ namespace Reden {
 		}
 
 		return scroll();
+	}
+
+	void LineView::showURI(const Glib::ustring &uri) {
+		gtk_show_uri(GTK_WINDOW(dynamic_cast<Gtk::Window *>(get_root())->gobj()), uri.c_str(), 0);
 	}
 
 	void LineView::setBold(Glib::RefPtr<Gtk::TextTag> tag) {

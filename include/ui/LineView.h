@@ -78,6 +78,7 @@ namespace Reden {
 			LineView & addTime(const Glib::ustring &timestamp);
 			LineView & addStar();
 			LineView & addMessageMain(const Glib::ustring &name, const Glib::ustring &message, bool is_self);
+			void showURI(const Glib::ustring &);
 
 			void setBold(Glib::RefPtr<Gtk::TextTag>);
 			bool atEnd() const;
