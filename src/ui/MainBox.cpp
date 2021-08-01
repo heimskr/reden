@@ -349,17 +349,17 @@ namespace Reden {
 					std::vector<Glib::ustring> matches = client().commandMatches(cmd);
 
 					if (1 < matches.size()) {
-						log("Ambiguous command: /" + cmd);
+						active().error("Ambiguous command: /" + cmd);
 						Glib::ustring joined;
 						for (const Glib::ustring &match: matches)
 							joined += "/" + match + " ";
 						DBG("Matches: " << joined);
 					} else if (matches.empty() || !client().handleLine("/" + matches[0] + " " + il.body)) {
-						log("Unknown command: /" + cmd);
+						active().error("Unknown command: /" + cmd);
 					}
 				}
 			} catch (std::exception &err) {
-				log("Error: " + std::string(err.what()));
+				active().error(err.what());
 			}
 		} else if (active().isAlive()) {
 			if (PingPong::Channel *chan = activeChannel()) {

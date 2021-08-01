@@ -39,7 +39,7 @@ namespace Reden {
 			                const PingPong::ModeSet &);
 			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                        const Glib::ustring &);
-			LineView & error(const Glib::ustring &, bool is_markup);
+			LineView & error(const Glib::ustring &, bool is_markup = false);
 
 			bool isAlive() const { return alive; }
 			bool is(ParentType type_) const { return type == type_; }

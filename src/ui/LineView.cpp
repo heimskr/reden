@@ -222,21 +222,6 @@ namespace Reden {
 		else
 			append(name);
 		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
-
-
-		if (Util::isAction(message)) {
-			Glib::ustring copy = message;
-			Util::trimAction(copy);
-			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").appendMarkup(irc2pango(copy));
-			return scroll();
-		}
-
-		append("<", "bracket");
-		if (is_self)
-			append(name, "self");
-		else
-			append(name);
-		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
 	}
 
 	void LineView::setBold(Glib::RefPtr<Gtk::TextTag> tag) {
