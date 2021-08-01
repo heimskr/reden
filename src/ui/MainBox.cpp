@@ -66,6 +66,7 @@ namespace Reden {
 		(*row)[columns.name] = "Status";
 		(*row)[columns.pointer] = this;
 		serverRows.emplace(this, row);
+		serverTree.get_selection()->select(row);
 	}
 
 	void MainBox::focusEntry() {
