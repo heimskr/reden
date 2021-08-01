@@ -151,6 +151,8 @@ namespace Reden {
 			return;
 		serverModel->erase(channelRows.at(channel));
 		channelRows.erase(channel);
+		if (activeView == channel)
+			focusView(channel->server);
 	}
 
 	void MainBox::eraseUser(PingPong::User *user) {
