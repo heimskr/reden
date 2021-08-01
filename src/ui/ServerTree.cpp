@@ -126,7 +126,6 @@ namespace Reden {
 	}
 
 	void ServerTree::cursorChanged() {
-		std::cout << "cursorChanged\n";
 		if (auto iter = get_selection()->get_selected())
 			focusVoid((*iter)[columns.pointer]);
 	}
@@ -152,7 +151,6 @@ namespace Reden {
 	}
 
 	void ServerTree::rowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
-		std::cout << "rowActivated\n";
 		if (auto iter = model->get_iter(path))
 			focusVoid((*iter)[columns.pointer]);
 	}
