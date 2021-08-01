@@ -56,7 +56,7 @@ namespace Reden {
 
 		private:
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
-			                           modesTag, userTag, topicTag, asteriskTag, selfTag;
+			                           modesTag, userTag, topicTag, asteriskTag, selfTag, linkTag;
 			bool alive = true;
 			/** Whether the LineView was scrolled to the bottom at the beginning of the last call to start(). */
 			bool wasAtEnd = false;

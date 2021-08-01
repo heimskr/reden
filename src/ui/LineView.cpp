@@ -26,9 +26,12 @@ namespace Reden {
 		   topicTag = buffer.create_tag("topic");
 		asteriskTag = buffer.create_tag("asterisk");
 		    selfTag = buffer.create_tag("self");
+			linkTag = buffer.create_tag("link");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
+		   linkTag->property_foreground() = "blue";
 		   timeTag->property_font() = "Monospace";
+		   linkTag->property_underline() = Pango::Underline::SINGLE;
 		setBold(nameTag);
 		setBold(actionTag);
 		setBold(channelTag);
@@ -249,8 +252,42 @@ namespace Reden {
 			append(name, "self");
 		else
 			append(name);
-		append(">", "bracket").append(" ").appendMarkup(irc2pango(message));
-		// get_buffer()->apply_tag(
+		append(">", "bracket").append(" ");
+
+		auto start_mark = Gtk::TextMark::create();
+		auto buffer = get_buffer();
+		buffer->add_mark(start_mark, buffer->end());
+		appendMarkup(irc2pango(message));
+		auto start = buffer->get_iter_at_mark(start_mark), end = buffer->end(), iter = start;
+
+		Gtk::TextBuffer::iterator http_start;
+
+		static Glib::ustring enders = "() \"";
+
+		// This is incredibly ugly. I'm sorry.
+		--iter;
+		while (++iter < end) {
+			if (!iter || *iter != 'h')
+				continue;
+			http_start = iter;
+			if (!++iter || *iter != 't')
+				continue;
+			if (!++iter || *iter != 't')
+				continue;
+			if (!++iter || *iter != 'p')
+				continue;
+			if (!++iter || (*iter != 's' && *iter != ':'))
+				continue;
+			if (iter && *iter == 's')
+				++iter;
+			if (!++iter || *iter != '/')
+				continue;
+			if (!++iter || *iter != '/')
+				continue;
+			while (iter && iter < end && enders.find(*iter) == Glib::ustring::npos)
+				++iter;
+			buffer->apply_tag(linkTag, http_start, iter);
+		}
 
 		return scroll();
 	}
