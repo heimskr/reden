@@ -22,7 +22,7 @@ namespace Reden {
 
 		add("join", 1,  1, true, [this](PingPong::Server *server, const InputLine &il) {
 			const Glib::ustring &first = il.first();
-			waitForServer(server, PingPong::Server::Stage::Ready, [=]() {
+			waitForServer(server, PingPong::Server::Stage::Ready, [=] {
 				PingPong::JoinCommand(server, first).send();
 			});
 		});

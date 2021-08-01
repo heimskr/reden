@@ -1,12 +1,15 @@
 #include "UI.h"
+#include "core/Client.h"
 #include "ui/ServerTree.h"
 
+#include "pingpong/commands/Part.h"
 #include "pingpong/core/Channel.h"
 #include "pingpong/core/Server.h"
 #include "pingpong/core/User.h"
 
 namespace Reden {
-	ServerTree::ServerTree(): Gtk::TreeView() {
+	ServerTree::ServerTree(Client &client_): Gtk::TreeView(), client(client_) {
+		getActiveView = [] { return nullptr; };
 		model = Gtk::TreeStore::create(columns);
 		set_model(model);
 		set_vexpand(true);
@@ -18,12 +21,40 @@ namespace Reden {
 		signal_row_activated().connect(sigc::mem_fun(*this, &ServerTree::rowActivated));
 		signal_cursor_changed().connect(sigc::mem_fun(*this, &ServerTree::cursorChanged));
 		addStatusRow();
+
+		auto gesture = Gtk::GestureClick::create();
+		gesture->set_button(GDK_BUTTON_SECONDARY);
+		gesture->signal_pressed().connect(sigc::mem_fun(*this, &ServerTree::secondaryClicked), true);
+		add_controller(gesture);
+
+		auto menu = Gio::Menu::create();
+		menu->append("_Disconnect", "popup.close");
+		popupMenuServer.set_parent(*this);
+		popupMenuServer.set_menu_model(menu);
+		popupMenuServer.set_has_arrow(false);
+
+		menu = Gio::Menu::create();
+		menu->append("_Leave", "popup.close");
+		popupMenuChannel.set_parent(*this);
+		popupMenuChannel.set_menu_model(menu);
+		popupMenuChannel.set_has_arrow(false);
+
+		menu = Gio::Menu::create();
+		menu->append("_Close", "popup.close");
+		popupMenuUser.set_parent(*this);
+		popupMenuUser.set_menu_model(menu);
+		popupMenuUser.set_has_arrow(false);
+
+		auto group = Gio::SimpleActionGroup::create();
+		group->add_action("close", sigc::mem_fun(*this, &ServerTree::close));
+		insert_action_group("popup", group);
 	}
 
 	void ServerTree::addStatusRow() {
 		auto row = model->append();
 		(*row)[columns.name] = "Status";
 		(*row)[columns.pointer] = this;
+		(*row)[columns.type] = Type::Status;
 		serverRows.emplace(this, row);
 		get_selection()->select(row);
 	}
@@ -37,6 +68,7 @@ namespace Reden {
 		auto row = model->append();
 		(*row)[columns.name] = server->id;
 		(*row)[columns.pointer] = server;
+		(*row)[columns.type] = Type::Server;
 		serverRows.emplace(server, row);
 		if (focus)
 			focusView(server);
@@ -55,6 +87,7 @@ namespace Reden {
 		expand_row(Gtk::TreeModel::Path(iter), false);
 		(*row)[columns.name] = channel->name;
 		(*row)[columns.pointer] = channel;
+		(*row)[columns.type] = Type::Channel;
 		channelRows.emplace(channel, row);
 		if (focus)
 			focusView(channel);
@@ -73,12 +106,13 @@ namespace Reden {
 		expand_row(Gtk::TreeModel::Path(iter), false);
 		(*row)[columns.name] = user->name;
 		(*row)[columns.pointer] = user;
+		(*row)[columns.type] = Type::User;
 		userRows.emplace(user, row);
 		if (focus)
 			focusView(user);
 	}
 
-	void ServerTree::erase(PingPong::Server *server, void *active_view) {
+	void ServerTree::erase(PingPong::Server *server) {
 		if (serverRows.count(server) == 0)
 			return;
 
@@ -88,7 +122,7 @@ namespace Reden {
 			if (channel->server == server)
 				remove_channels.push_back(channel);
 		for (PingPong::Channel *channel: remove_channels)
-				erase(channel, active_view);
+				erase(channel);
 
 		std::vector<PingPong::User *> remove_users;
 		remove_users.reserve(userRows.size());
@@ -96,32 +130,32 @@ namespace Reden {
 			if (user->server == server)
 				remove_users.push_back(user);
 		for (PingPong::User *user: remove_users)
-			erase(user, active_view);
+			erase(user);
 
 		model->erase(serverRows.at(server));
 		serverRows.erase(server);
 		signal_erase_requested_.emit(server);
-		if (active_view == server)
+		if (getActiveView() == server)
 			signal_status_focus_requested_.emit();
 	}
 
-	void ServerTree::erase(PingPong::Channel *channel, void *active_view) {
+	void ServerTree::erase(PingPong::Channel *channel) {
 		if (channelRows.count(channel) == 0)
 			return;
 		model->erase(channelRows.at(channel));
 		channelRows.erase(channel);
 		signal_erase_requested_.emit(channel);
-		if (active_view == channel)
+		if (getActiveView() == channel)
 			focusView(channel->server);
 	}
 
-	void ServerTree::erase(PingPong::User *user, void *active_view) {
+	void ServerTree::erase(PingPong::User *user) {
 		if (userRows.count(user) == 0)
 			return;
 		model->erase(userRows.at(user));
 		userRows.erase(user);
 		signal_erase_requested_.emit(user);
-		if (active_view == user)
+		if (getActiveView() == user)
 			focusView(user->server);
 	}
 
@@ -153,6 +187,52 @@ namespace Reden {
 	void ServerTree::rowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
 		if (auto iter = model->get_iter(path))
 			focusVoid((*iter)[columns.pointer]);
+	}
+
+	void ServerTree::secondaryClicked(int, double x, double y) {
+		Gtk::TreeModel::Path path;
+		Gtk::TreeView::DropPosition pos;
+		get_dest_row_at_pos(x, y, path, pos);
+		if (path.empty())
+			return;
+		switch ((*model->get_iter(path))[columns.type]) {
+			case Type::Server:
+				popupMenuServer.set_pointing_to(Gdk::Rectangle(x, y, 1, 1));
+				popupMenuServer.popup();
+				break;
+			case Type::Channel:
+				popupMenuChannel.set_pointing_to(Gdk::Rectangle(x, y, 1, 1));
+				popupMenuChannel.popup();
+				break;
+			case Type::User:
+				popupMenuUser.set_pointing_to(Gdk::Rectangle(x, y, 1, 1));
+				popupMenuUser.popup();
+				break;
+			default:
+				break;
+		}
+	}
+
+	void ServerTree::close() {
+		if (auto iter = get_selection()->get_selected())
+			switch ((*iter)[columns.type]) {
+				case Type::Server: {
+					auto *server = reinterpret_cast<PingPong::Server *>((void *) ((*iter)[columns.pointer]));
+					server->quit();
+					erase(server);
+					break;
+				}
+				case Type::Channel: {
+					auto *channel = reinterpret_cast<PingPong::Channel *>((void *) ((*iter)[columns.pointer]));
+					PingPong::PartCommand(channel).send();
+					break;
+				}
+				case Type::User:
+					erase(reinterpret_cast<PingPong::User *>((void *) ((*iter)[columns.pointer])));
+					break;
+				default:
+					break;
+			}
 	}
 
 	sigc::signal<void()> ServerTree::signal_status_focus_requested() {

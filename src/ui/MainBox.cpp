@@ -10,6 +10,7 @@
 
 namespace Reden {
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
+		serverTree = std::make_unique<ServerTree>(parent.client);
 		chatBox.set_expand(true);
 		userModel = Gtk::ListStore::create(columns);
 		userModel->set_sort_func(columns.name, sigc::mem_fun(*this, &MainBox::compareUsers));
@@ -20,7 +21,7 @@ namespace Reden {
 		userTree.set_can_focus(false);
 		userTree.add_css_class("user-tree");
 		appendColumn(userTree, "Name", columns.name);
-		serversScrolled.set_child(serverTree);
+		serversScrolled.set_child(*serverTree);
 		usersScrolled.set_child(userTree);
 		append(serversScrolled);
 		append(leftSeparator);
@@ -45,20 +46,21 @@ namespace Reden {
 		keyController = Gtk::EventControllerKey::create();;
 		keyController->signal_key_pressed().connect(sigc::mem_fun(*this, &MainBox::keyPressed), false);
 		add_controller(keyController);
-		serverTree.signal_status_focus_requested().connect([this] { focusView(&serverTree); });
-		serverTree.signal_channel_focus_requested().connect([this](PingPong::Channel *channel) {
+		serverTree->getActiveView = [this] { return activeView; };
+		serverTree->signal_status_focus_requested().connect([this] { focusView(&serverTree); });
+		serverTree->signal_channel_focus_requested().connect([this](PingPong::Channel *channel) {
 			focusView(channel, channel);
 		});
-		serverTree.signal_server_focus_requested().connect([this](PingPong::Server *server) {
+		serverTree->signal_server_focus_requested().connect([this](PingPong::Server *server) {
 			focusView(server, server);
 		});
-		serverTree.signal_user_focus_requested().connect([this](PingPong::User *user) {
+		serverTree->signal_user_focus_requested().connect([this](PingPong::User *user) {
 			focusView(user, user);
 		});
-		serverTree.signal_focus_requested().connect([this](void *ptr) {
+		serverTree->signal_focus_requested().connect([this](void *ptr) {
 			focusView(ptr);
 		});
-		serverTree.signal_erase_requested().connect([this](void *ptr) { views.erase(ptr); });
+		serverTree->signal_erase_requested().connect([this](void *ptr) { views.erase(ptr); });
 	}
 
 	Client & MainBox::client() {
@@ -132,25 +134,25 @@ namespace Reden {
 	}
 
 	PingPong::Server * MainBox::activeServer() {
-		if (serverTree.serverRows.count(activeView) != 0)
+		if (serverTree->serverRows.count(activeView) != 0)
 			return reinterpret_cast<PingPong::Server *>(activeView);
 		// Ugly!
 		PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(activeView);
-		if (serverTree.channelRows.count(channel) != 0)
+		if (serverTree->channelRows.count(channel) != 0)
 			return channel->server;
 		return nullptr;
 	}
 
 	PingPong::Channel * MainBox::activeChannel() {
 		PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(activeView);
-		if (serverTree.channelRows.count(channel) != 0)
+		if (serverTree->channelRows.count(channel) != 0)
 			return channel;
 		return nullptr;
 	}
 
 	PingPong::User * MainBox::activeUser() {
 		PingPong::User *user = reinterpret_cast<PingPong::User *>(activeView);
-		if (serverTree.userRows.count(user) != 0)
+		if (serverTree->userRows.count(user) != 0)
 			return user;
 		return nullptr;
 	}
@@ -190,27 +192,27 @@ namespace Reden {
 	}
 
 	void MainBox::add(PingPong::Channel *channel, bool focus) {
-		serverTree.add(channel, focus);
+		serverTree->add(channel, focus);
 	}
 
 	void MainBox::add(PingPong::Server *server, bool focus) {
-		serverTree.add(server, focus);
+		serverTree->add(server, focus);
 	}
 
 	void MainBox::add(PingPong::User *user, bool focus) {
-		serverTree.add(user, focus);
+		serverTree->add(user, focus);
 	}
 
 	void MainBox::erase(PingPong::Channel *channel) {
-		serverTree.erase(channel, activeView);
+		serverTree->erase(channel);
 	}
 
 	void MainBox::erase(PingPong::Server *server) {
-		serverTree.erase(server, activeView);
+		serverTree->erase(server);
 	}
 
 	void MainBox::erase(PingPong::User *user) {
-		serverTree.erase(user, activeView);
+		serverTree->erase(user);
 	}
 
 	void MainBox::focusView(void *ptr) {
@@ -228,13 +230,13 @@ namespace Reden {
 		line_out = &view;
 		chatScrolled.set_child(view);
 		userModel->clear();
-		if (serverTree.serverRows.count(ptr) != 0) {
-			serverTree.get_selection()->select(serverTree.serverRows.at(ptr));
+		if (serverTree->serverRows.count(ptr) != 0) {
+			serverTree->get_selection()->select(serverTree->serverRows.at(ptr));
 			parent.irc->activeServer = reinterpret_cast<PingPong::Server *>(ptr);
-		} else if (serverTree.channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
+		} else if (serverTree->channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
-			serverTree.get_selection()->select(serverTree.channelRows.at(channel));
+			serverTree->get_selection()->select(serverTree->channelRows.at(channel));
 			presentUserRows.clear();
 			userModel->clear();
 			for (const std::string &user: userSets[channel]) {
@@ -243,9 +245,9 @@ namespace Reden {
 				(*row)[columns.name] = static_cast<char>(channel->getHats(user).highest()) + user;
 				(*row)[columns.pointer] = channel;
 			}
-		} else if (serverTree.userRows.count(reinterpret_cast<PingPong::User *>(ptr)) != 0) {
+		} else if (serverTree->userRows.count(reinterpret_cast<PingPong::User *>(ptr)) != 0) {
 			PingPong::User *user = reinterpret_cast<PingPong::User *>(ptr);
-			serverTree.get_selection()->select(serverTree.userRows.at(user));
+			serverTree->get_selection()->select(serverTree->userRows.at(user));
 			presentUserRows.clear();
 			userModel->clear();
 			std::unordered_set<std::string> added_users;
@@ -286,14 +288,14 @@ namespace Reden {
 		}
 
 		if (keycode == 111 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // up arrow
-			if (auto iter = serverTree.get_selection()->get_selected()) {
-				auto path = serverTree.getPath(iter);
+			if (auto iter = serverTree->get_selection()->get_selected()) {
+				auto path = serverTree->getPath(iter);
 				if (--iter) {
-					serverTree.get_selection()->select(iter);
-					serverTree.cursorChanged();
+					serverTree->get_selection()->select(iter);
+					serverTree->cursorChanged();
 				} else if (1 < path.size() && path.up()) {
-					serverTree.get_selection()->select(path);
-					serverTree.cursorChanged();
+					serverTree->get_selection()->select(path);
+					serverTree->cursorChanged();
 				}
 			}
 
@@ -301,15 +303,15 @@ namespace Reden {
 		}
 
 		if (keycode == 116 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // down arrow
-			if (auto iter = serverTree.get_selection()->get_selected()) {
-				auto path = serverTree.getPath(iter);
+			if (auto iter = serverTree->get_selection()->get_selected()) {
+				auto path = serverTree->getPath(iter);
 				if (++iter) {
-					serverTree.get_selection()->select(iter);
-					serverTree.cursorChanged();
+					serverTree->get_selection()->select(iter);
+					serverTree->cursorChanged();
 				} else {
 					path.down();
-					serverTree.get_selection()->select(path);
-					serverTree.cursorChanged();
+					serverTree->get_selection()->select(path);
+					serverTree->cursorChanged();
 				}
 			}
 

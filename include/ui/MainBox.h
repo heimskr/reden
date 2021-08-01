@@ -88,7 +88,7 @@ namespace Reden {
 			};
 
 			RedenWindow &parent;
-			ServerTree serverTree;
+			std::unique_ptr<ServerTree> serverTree;
 			Gtk::TreeView userTree;
 			Glib::RefPtr<Gtk::ListStore> userModel;
 			Gtk::Separator leftSeparator, rightSeparator, topicSeparator;
