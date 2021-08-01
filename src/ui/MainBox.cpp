@@ -160,6 +160,8 @@ namespace Reden {
 			return;
 		serverModel->erase(userRows.at(user));
 		userRows.erase(user);
+		if (activeView == user)
+			focusView(user->server);
 	}
 
 	void MainBox::addStatus(const std::string &line, bool pangoize) {
@@ -317,10 +319,14 @@ namespace Reden {
 			serverTree.get_selection()->select(userRows.at(user));
 			presentUserRows.clear();
 			userModel->clear();
+			std::unordered_set<std::string> added_users;
 			for (const std::string &user_str: {user->server->getSelf()->name, user->name}) {
+				if (added_users.count(user_str) != 0)
+					continue;
+				added_users.insert(user_str);
 				auto row = userModel->append();
 				presentUserRows[user_str] = row;
-				(*row)[columns.name] = user_str;
+				(*row)[columns.name] = " " + user_str;
 				(*row)[columns.pointer] = user;
 			}
 		}
