@@ -31,19 +31,16 @@ namespace Reden {
 		menu->append("_Disconnect", "popup.close");
 		popupMenuServer.set_parent(*this);
 		popupMenuServer.set_menu_model(menu);
-		popupMenuServer.set_has_arrow(false);
 
 		menu = Gio::Menu::create();
 		menu->append("_Leave", "popup.close");
 		popupMenuChannel.set_parent(*this);
 		popupMenuChannel.set_menu_model(menu);
-		popupMenuChannel.set_has_arrow(false);
 
 		menu = Gio::Menu::create();
 		menu->append("_Close", "popup.close");
 		popupMenuUser.set_parent(*this);
 		popupMenuUser.set_menu_model(menu);
-		popupMenuUser.set_has_arrow(false);
 
 		auto group = Gio::SimpleActionGroup::create();
 		group->add_action("close", sigc::mem_fun(*this, &ServerTree::close));
