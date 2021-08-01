@@ -47,7 +47,7 @@ namespace Reden {
 		keyController->signal_key_pressed().connect(sigc::mem_fun(*this, &MainBox::keyPressed), false);
 		add_controller(keyController);
 		serverTree->getActiveView = [this] { return activeView; };
-		serverTree->signal_status_focus_requested().connect([this] { focusView(&serverTree); });
+		serverTree->signal_status_focus_requested().connect([this] { focusView(serverTree.get()); });
 		serverTree->signal_channel_focus_requested().connect([this](PingPong::Channel *channel) {
 			focusView(channel, channel);
 		});
@@ -62,6 +62,7 @@ namespace Reden {
 		});
 		serverTree->signal_erase_requested().connect([this](void *ptr) { views.erase(ptr);   });
 		serverTree->signal_clear_requested().connect([this](void *ptr) { views[ptr].clear(); });
+		focusView(serverTree.get());
 	}
 
 	Client & MainBox::client() {
@@ -73,7 +74,7 @@ namespace Reden {
 	}
 
 	void MainBox::addStatus(const std::string &line, bool pangoize) {
-		getLineView(&serverTree).add(line, pangoize);
+		getLineView(serverTree.get()).add(line, pangoize);
 	}
 
 	void MainBox::updateChannel(PingPong::Channel &channel) {
@@ -127,7 +128,7 @@ namespace Reden {
 	}
 
 	bool MainBox::inStatus() const {
-		return activeView == &serverTree;
+		return activeView == serverTree.get();
 	}
 
 	LineView & MainBox::active() {
@@ -233,7 +234,8 @@ namespace Reden {
 		userModel->clear();
 		if (serverTree->serverRows.count(ptr) != 0) {
 			serverTree->get_selection()->select(serverTree->serverRows.at(ptr));
-			parent.irc->activeServer = reinterpret_cast<PingPong::Server *>(ptr);
+			if (ptr != serverTree.get())
+				parent.irc->activeServer = reinterpret_cast<PingPong::Server *>(ptr);
 		} else if (serverTree->channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
