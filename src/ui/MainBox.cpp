@@ -361,20 +361,33 @@ namespace Reden {
 		}
 
 		if (keycode == 111 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // up arrow
-			if (auto iter = serverTree.get_selection()->get_selected())
+			if (auto iter = serverTree.get_selection()->get_selected()) {
+				auto path = serverModel->get_path(iter);
 				if (--iter) {
 					serverTree.get_selection()->select(iter);
 					serverCursorChanged();
+				} else if (1 < path.size() && path.up()) {
+					serverTree.get_selection()->select(path);
+					serverCursorChanged();
 				}
+			}
+
 			return true;
 		}
 
 		if (keycode == 116 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // down arrow
-			if (auto iter = serverTree.get_selection()->get_selected())
+			if (auto iter = serverTree.get_selection()->get_selected()) {
+				auto path = serverModel->get_path(iter);
 				if (++iter) {
 					serverTree.get_selection()->select(iter);
 					serverCursorChanged();
+				} else {
+					path.down();
+					serverTree.get_selection()->select(path);
+					serverCursorChanged();
 				}
+			}
+
 			return true;
 		}
 
