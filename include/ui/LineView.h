@@ -30,6 +30,8 @@ namespace Reden {
 
 			LineView & add(const Glib::ustring &text, bool pangoize = true);
 			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self = false);
+			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self, int hour,
+			                      int minute, int second);
 			LineView & joined(const Glib::ustring &name, const Glib::ustring &channel);
 			LineView & parted(const Glib::ustring &name, const Glib::ustring &channel, const Glib::ustring &reason);
 			LineView & quit(const Glib::ustring &name, const Glib::ustring &reason);
@@ -59,6 +61,7 @@ namespace Reden {
 			bool wasAtEnd = false;
 			Glib::RefPtr<Gtk::TextBuffer::Mark> endMark;
 
+			static Glib::ustring makeTimestamp(int hour, int minute, int second);
 			static Glib::ustring makeTimestamp(time_t);
 			static Glib::ustring makeTimestamp();
 
@@ -68,7 +71,9 @@ namespace Reden {
 			LineView & appendMarkup(const Glib::ustring &);
 			LineView & addNewline();
 			LineView & addTime();
+			LineView & addTime(const Glib::ustring &timestamp);
 			LineView & addStar();
+			LineView & addMessageMain(const Glib::ustring &name, const Glib::ustring &message, bool is_self);
 
 			void setBold(Glib::RefPtr<Gtk::TextTag>);
 			bool atEnd() const;

@@ -59,20 +59,56 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::PrivmsgEvent>([this](PingPong::PrivmsgEvent *ev) {
-			const std::string content = ev->content;
+			std::string content = ev->content;
 			if (ev->isChannel()) {
 				const auto channel = ev->server->getChannel(ev->where, true);
+				const bool default_behavior = cache.interfacePlaybackMode == "default";
+
 				if (ev->speaker->name == "***") {
-					if (ev->content == "Buffer Playback...")
+					if (ev->content == "Buffer Playback...") {
 						playbackModeChannels.insert(channel);
-					else if (ev->content == "PlaybackComplete.")
+						if (!default_behavior)
+							return;
+					} else if (ev->content == "Playback Complete.") {
 						playbackModeChannels.erase(channel);
+						if (!default_behavior)
+							return;
+					}
 				}
+
 				const std::string name = channel->withHat(ev->speaker);
 				const bool is_self = ev->speaker->isSelf();
-				window.queue([this, content, channel, name, is_self] {
-					window.box[channel].addMessage(name, content, is_self);
-				});
+
+				if (playbackModeChannels.count(channel) != 0 && !default_behavior) {
+					if (cache.interfacePlaybackMode == "ignore")
+						return;
+
+					if (content.find("\x01" "ACTION ") == 0) {
+						content.erase(0, 8);
+						content.insert(11, "\x01" "ACTION ");
+					}
+
+					if (content.size() < 11 || content[0] != '[' || content[9] != ']' || content[10] != ' ')
+						// 11 = strlen("[xx:xx:xx] ")
+						throw std::runtime_error("Invalid playback string: \"" + content + "\"");
+					const std::string hour_str = content.substr(1, 2),
+					                minute_str = content.substr(4, 2),
+					                second_str = content.substr(7, 2);
+					content.erase(0, 11);
+					long hour, minute, second;
+					using formicine::util::parse_long;
+					if (!parse_long(hour_str, hour) || !parse_long(minute_str, minute) ||
+					    !parse_long(second_str, second))
+						throw std::runtime_error("Invalid playback timestamp");
+					window.queue([=, this] {
+						window.box[channel].addMessage(name, content, is_self,   static_cast<int>(hour),
+						                               static_cast<int>(minute), static_cast<int>(second));
+					});
+				} else {
+					window.queue([this, content, channel, name, is_self] {
+						window.box[channel].addMessage(name, content, is_self);
+					});
+				}
 			} else if (ev->isUser()) {
 				auto user = ev->speaker;
 				auto speaker = user;

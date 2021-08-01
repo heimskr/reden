@@ -22,6 +22,8 @@ namespace Reden {
 			bool interfaceCloseOnPart  = getBool("interface.close_on_part"),
 			     interfaceShowMotds    = getBool("interface.show_motds");
 
+			Glib::ustring interfacePlaybackMode = getString("interface.playback_mode");
+
 			bool messagesDirectOnly       = getBool("messages.direct_only"),
 			     messagesHighlightNotices = getBool("messages.highlight_notices"),
 			     messagesNoticesInStatus  = getBool("messages.notices_in_status");

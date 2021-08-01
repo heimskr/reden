@@ -40,6 +40,15 @@ namespace Reden {
 		return std::holds_alternative<bool>(val)? ValidationResult::Valid : ValidationResult::BadType;
 	}
 
+	static ValidationResult validatePlayback(const Value &value) {
+		if (!std::holds_alternative<Glib::ustring>(value))
+			return ValidationResult::BadType;
+		const Glib::ustring &str = std::get<Glib::ustring>(value);
+		if (str == "ignore" || str == "integrate" || str == "default")
+			return ValidationResult::Valid;
+		return ValidationResult::BadValue;
+	}
+
 	bool registerKey(const Glib::ustring &group, const Glib::ustring &key, const Value &default_value,
 	                 const Validator &validator, const Applicator &applicator, const Glib::ustring &description) {
 		Glib::ustring combined = group + "." + key;
@@ -110,6 +119,9 @@ namespace Reden {
 
 		registerKey("interface", "show_motds", true, validateBool, CACHE_BOOL(interfaceShowMotds),
 			"Whether to show server MOTDs.");
+
+		registerKey("interface", "playback_mode", "integrate", validatePlayback, CACHE_STRING(interfacePlaybackMode),
+			"How to handle ZNC playback. Valid values: ignore, integrate, default.");
 
 		// Messages
 

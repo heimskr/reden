@@ -49,21 +49,13 @@ namespace Reden {
 	}
 
 	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self) {
-		start();
+		return start().addMessageMain(name, message, is_self);
+	}
 
-		if (Util::isAction(message)) {
-			Glib::ustring copy = message;
-			Util::trimAction(copy);
-			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").appendMarkup(irc2pango(copy));
-			return scroll();
-		}
-
-		append("<", "bracket");
-		if (is_self)
-			append(name, "self");
-		else
-			append(name);
-		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
+	LineView & LineView::addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self, int hour,
+	                                int minute, int second) {
+		wasAtEnd = atEnd();
+		return addNewline().addTime(makeTimestamp(hour, minute, second)).addMessageMain(name, message, is_self);
 	}
 
 	LineView & LineView::joined(const Glib::ustring &name, const Glib::ustring &channel) {
@@ -143,6 +135,22 @@ namespace Reden {
 		return *this;
 	}
 
+	Glib::ustring LineView::makeTimestamp(int hour, int minute, int second) {
+		std::stringstream ss;
+		ss << "[" << std::setfill('0') << std::setw(2) << hour << ":" << std::setw(2) << minute << ":" << std::setw(2)
+		   << second << "]";
+		return ss.str();
+	}
+
+	Glib::ustring LineView::makeTimestamp(time_t now) {
+		tm *times = std::localtime(&now);
+		return makeTimestamp(times->tm_hour, times->tm_min, times->tm_sec);
+	}
+
+	Glib::ustring LineView::makeTimestamp() {
+		return makeTimestamp(std::time(nullptr));
+	}
+
 	LineView & LineView::start() {
 		wasAtEnd = atEnd();
 		return addNewline().addTime();
@@ -171,8 +179,12 @@ namespace Reden {
 	}
 
 	LineView & LineView::addTime() {
+		return addTime(makeTimestamp());
+	}
+
+	LineView & LineView::addTime(const Glib::ustring &timestamp) {
 		auto &buffer = *get_buffer();
-		buffer.insert_with_tag(buffer.end(), makeTimestamp(), "timestamp");
+		buffer.insert_with_tag(buffer.end(), timestamp, "timestamp");
 		buffer.insert(buffer.end(), " ");
 		return *this;
 	}
@@ -182,16 +194,35 @@ namespace Reden {
 		return *this;
 	}
 
-	Glib::ustring LineView::makeTimestamp(time_t now) {
-		std::stringstream ss;
-		tm *times = std::localtime(&now);
-		ss << "[" << std::setfill('0') << std::setw(2) << times->tm_hour << ":" << std::setw(2) << times->tm_min << ":"
-		   << std::setw(2) << times->tm_sec << "]";
-		return ss.str();
-	}
+	LineView & LineView::addMessageMain(const Glib::ustring &name, const Glib::ustring &message, bool is_self) {
+		if (Util::isAction(message)) {
+			Glib::ustring copy = message;
+			Util::trimAction(copy);
+			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").appendMarkup(irc2pango(copy));
+			return scroll();
+		}
 
-	Glib::ustring LineView::makeTimestamp() {
-		return makeTimestamp(std::time(nullptr));
+		append("<", "bracket");
+		if (is_self)
+			append(name, "self");
+		else
+			append(name);
+		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
+
+
+		if (Util::isAction(message)) {
+			Glib::ustring copy = message;
+			Util::trimAction(copy);
+			addStar().append(name[0] == ' '? name.substr(1) : name, "name").append(" ").appendMarkup(irc2pango(copy));
+			return scroll();
+		}
+
+		append("<", "bracket");
+		if (is_self)
+			append(name, "self");
+		else
+			append(name);
+		return append(">", "bracket").append(" ").appendMarkup(irc2pango(message)).scroll();
 	}
 
 	void LineView::setBold(Glib::RefPtr<Gtk::TextTag> tag) {
