@@ -146,6 +146,7 @@ namespace Reden {
 
 		serverModel->erase(serverRows.at(server));
 		serverRows.erase(server);
+		views.erase(server);
 	}
 
 	void MainBox::eraseChannel(PingPong::Channel *channel) {
@@ -153,6 +154,7 @@ namespace Reden {
 			return;
 		serverModel->erase(channelRows.at(channel));
 		channelRows.erase(channel);
+		views.erase(channel);
 		if (activeView == channel)
 			focusView(channel->server);
 	}
@@ -162,6 +164,7 @@ namespace Reden {
 			return;
 		serverModel->erase(userRows.at(user));
 		userRows.erase(user);
+		views.erase(user);
 		if (activeView == user)
 			focusView(user->server);
 	}
