@@ -19,7 +19,7 @@ namespace Reden {
 			auto name = ev->who->name;
 			window.queue([this, channel, name, self] {
 				if (self)
-					window.box.addChannel(channel.get(), true);
+					window.box.add(channel.get(), true);
 				window.box[channel].joined(name, channel->name);
 				window.box.updateChannel(*channel);
 			});
@@ -46,13 +46,13 @@ namespace Reden {
 			const auto &channel = ev->channel;
 			if (ev->who->isSelf()) {
 				window.queue([this, channel] {
-					window.box.eraseChannel(channel.get());
+					window.box.erase(channel.get());
 				});
 			} else {
 				const auto &name = ev->who->name;
 				const auto &reason = ev->content;
 				window.queue([this, channel, name, reason] {
-					window.box.addChannel(channel.get(), false);
+					window.box.add(channel.get(), false);
 					window.box[channel].parted(name, channel->name, reason);
 				});
 			}
@@ -118,7 +118,7 @@ namespace Reden {
 				if (is_self)
 					user = ev->getUser(ev->server);
 				window.queue([this, content, user, speaker, is_self] {
-					window.box.addUser(user.get(), false);
+					window.box.add(user.get(), false);
 					window.box[user].addMessage(speaker->name, content, is_self);
 				});
 			}
@@ -128,7 +128,7 @@ namespace Reden {
 			const auto &server = ev->server;
 			if (ev->who->isSelf()) {
 				window.queue([this, server] {
-					window.box.eraseServer(server);
+					window.box.erase(server);
 				});
 			} else {
 				const auto &user = ev->who;
@@ -148,7 +148,7 @@ namespace Reden {
 			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
 				raw.pop_back();
 			window.queue([this, server, raw] {
-				window.box.addServer(server, false);
+				window.box.add(server, false);
 				window.box[server].add("<< " + raw);
 			});
 		});
@@ -159,7 +159,7 @@ namespace Reden {
 			while (!raw.empty() && (raw.back() == '\r' || raw.back() == '\n'))
 				raw.pop_back();
 			window.queue([this, server, raw] {
-				window.box.addServer(server, false);
+				window.box.add(server, false);
 				window.box[server].add(">> " + raw);
 			});
 		});
@@ -171,7 +171,7 @@ namespace Reden {
 				case PingPong::Server::Stage::Ready: {
 					auto server = ev->server;
 					window.queue([this, server] {
-						window.box.addServer(server, true);
+						window.box.add(server, true);
 						window.box.addStatus("Connected to " + server->id + " (" + server->hostname + ":"
 							+ std::to_string(server->port) + ")");
 					});
@@ -180,7 +180,7 @@ namespace Reden {
 				case PingPong::Server::Stage::Dead: {
 					auto server = ev->server;
 					window.queue([this, server] {
-						window.box.eraseServer(server);
+						window.box.erase(server);
 					});
 					break;
 				}

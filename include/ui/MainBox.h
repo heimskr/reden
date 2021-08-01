@@ -8,6 +8,7 @@
 #include "Connection.h"
 #include "ui/BasicEntry.h"
 #include "ui/LineView.h"
+#include "ui/ServerTree.h"
 
 namespace PingPong {
 	class Server;
@@ -26,12 +27,6 @@ namespace Reden {
 			void *activeView = nullptr;
 
 			void focusEntry();
-			void addServer(PingPong::Server *, bool focus = false);
-			void addChannel(PingPong::Channel *, bool focus = false);
-			void addUser(PingPong::User *, bool focus = false);
-			void eraseServer(PingPong::Server *);
-			void eraseChannel(PingPong::Channel *);
-			void eraseUser(PingPong::User *);
 			void addStatus(const std::string &, bool pangoize = true);
 			void updateChannel(PingPong::Channel &);
 			Glib::ustring getInput() const;
@@ -54,6 +49,12 @@ namespace Reden {
 			LineView & operator[](void *ptr);
 			const LineView & operator[](void *ptr) const;
 			void setTopic(void *ptr, const std::string &);
+			void add(PingPong::Channel *, bool focus = false);
+			void add(PingPong::Server *, bool focus = false);
+			void add(PingPong::User *, bool focus = false);
+			void erase(PingPong::Channel *);
+			void erase(PingPong::Server *);
+			void erase(PingPong::User *);
 
 			template <typename T>
 			LineView & getLineView(std::shared_ptr<T> ptr) {
@@ -87,8 +88,8 @@ namespace Reden {
 			};
 
 			RedenWindow &parent;
-			Gtk::TreeView serverTree, userTree;
-			Glib::RefPtr<Gtk::TreeStore> serverModel;
+			ServerTree serverTree;
+			Gtk::TreeView userTree;
 			Glib::RefPtr<Gtk::ListStore> userModel;
 			Gtk::Separator leftSeparator, rightSeparator, topicSeparator;
 			Gtk::Box chatBox {Gtk::Orientation::VERTICAL};
@@ -97,11 +98,6 @@ namespace Reden {
 			BasicEntry chatEntry;
 			Columns columns;
 			Glib::RefPtr<Gtk::EventControllerKey> keyController;
-			// I'm using a void pointer here because serverRows can store both PingPong::Server pointers and also a
-			// dummy pointer to this MainBox for the status window.
-			std::unordered_map<void *, Gtk::TreeModel::iterator> serverRows;
-			std::unordered_map<PingPong::Channel *, Gtk::TreeModel::iterator> channelRows;
-			std::unordered_map<PingPong::User *, Gtk::TreeModel::iterator> userRows;
 			std::unordered_map<void *, LineView> views;
 			std::unordered_map<void *, Glib::ustring> topics;
 			std::unordered_map<std::string, Gtk::TreeModel::iterator> presentUserRows;
@@ -112,8 +108,6 @@ namespace Reden {
 			void addStatusRow();
 			void focusView(void *);
 			void focusView(void *, LineView * &);
-			void serverCursorChanged();
-			void serverRowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			int compareUsers(const Gtk::TreeModel::const_iterator &, const Gtk::TreeModel::const_iterator &);
 			bool keyPressed(guint, guint, Gdk::ModifierType);
 			void entryActivated();

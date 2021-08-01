@@ -10,14 +10,6 @@
 
 namespace Reden {
 	MainBox::MainBox(RedenWindow &parent_): Gtk::Box(Gtk::Orientation::HORIZONTAL), parent(parent_) {
-		serverModel = Gtk::TreeStore::create(columns);
-		serverTree.set_model(serverModel);
-		serverTree.set_vexpand(true);
-		serverTree.set_headers_visible(false);
-		serverTree.set_activate_on_single_click(true);
-		serverTree.set_can_focus(false);
-		serverTree.add_css_class("server-tree");
-		appendColumn(serverTree, "Name", columns.name);
 		chatBox.set_expand(true);
 		userModel = Gtk::ListStore::create(columns);
 		userModel->set_sort_func(columns.name, sigc::mem_fun(*this, &MainBox::compareUsers));
@@ -50,127 +42,35 @@ namespace Reden {
 		chatScrolled.set_vexpand(true);
 		chatEntry.signal_activate().connect(sigc::mem_fun(*this, &MainBox::entryActivated));
 		chatEntry.grab_focus();
-		addStatusRow();
-		serverTree.signal_cursor_changed().connect(sigc::mem_fun(*this, &MainBox::serverCursorChanged));
-		serverTree.signal_row_activated().connect(sigc::mem_fun(*this, &MainBox::serverRowActivated));
 		keyController = Gtk::EventControllerKey::create();;
 		keyController->signal_key_pressed().connect(sigc::mem_fun(*this, &MainBox::keyPressed), false);
 		add_controller(keyController);
+		serverTree.signal_status_focus_requested().connect([this] { focusView(&serverTree); });
+		serverTree.signal_channel_focus_requested().connect([this](PingPong::Channel *channel) {
+			focusView(channel, channel);
+		});
+		serverTree.signal_server_focus_requested().connect([this](PingPong::Server *server) {
+			focusView(server, server);
+		});
+		serverTree.signal_user_focus_requested().connect([this](PingPong::User *user) {
+			focusView(user, user);
+		});
+		serverTree.signal_focus_requested().connect([this](void *ptr) {
+			focusView(ptr);
+		});
+		serverTree.signal_erase_requested().connect([this](void *ptr) { views.erase(ptr); });
 	}
 
 	Client & MainBox::client() {
 		return parent.client;
 	}
 
-	void MainBox::addStatusRow() {
-		auto row = serverModel->append();
-		(*row)[columns.name] = "Status";
-		(*row)[columns.pointer] = this;
-		serverRows.emplace(this, row);
-		serverTree.get_selection()->select(row);
-	}
-
 	void MainBox::focusEntry() {
 		chatEntry.grab_focus();
 	}
 
-	void MainBox::addServer(PingPong::Server *server, bool focus) {
-		if (serverRows.count(server) != 0) {
-			if (focus)
-				focusView(server);
-			return;
-		}
-		auto row = serverModel->append();
-		(*row)[columns.name] = server->id;
-		(*row)[columns.pointer] = server;
-		serverRows.emplace(server, row);
-		if (focus)
-			focusView(server, server);
-	}
-
-	void MainBox::addChannel(PingPong::Channel *channel, bool focus) {
-		if (channelRows.count(channel) != 0) {
-			if (focus)
-				focusView(channel);
-			return;
-		}
-		if (serverRows.count(channel->server) == 0)
-			addServer(channel->server, false);
-		auto iter = serverRows.at(channel->server);
-		auto row = serverModel->append(iter->children());
-		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
-		(*row)[columns.name] = channel->name;
-		(*row)[columns.pointer] = channel;
-		channelRows.emplace(channel, row);
-		if (focus)
-			focusView(channel, channel);
-	}
-
-	void MainBox::addUser(PingPong::User *user, bool focus) {
-		if (userRows.count(user) != 0) {
-			if (focus)
-				focusView(user);
-			return;
-		}
-		if (serverRows.count(user->server) == 0)
-			addServer(user->server, false);
-		auto iter = serverRows.at(user->server);
-		auto row = serverModel->append(iter->children());
-		serverTree.expand_row(Gtk::TreeModel::Path(iter), false);
-		(*row)[columns.name] = user->name;
-		(*row)[columns.pointer] = user;
-		userRows.emplace(user, row);
-		if (focus)
-			focusView(user, user);
-	}
-
-	void MainBox::eraseServer(PingPong::Server *server) {
-		if (serverRows.count(server) == 0)
-			return;
-
-		std::vector<PingPong::Channel *> remove_channels;
-		remove_channels.reserve(channelRows.size());
-		for (auto &[channel, iter]: channelRows)
-			if (channel->server == server)
-				remove_channels.push_back(channel);
-		for (PingPong::Channel *channel: remove_channels)
-				eraseChannel(channel);
-
-		std::vector<PingPong::User *> remove_users;
-		remove_users.reserve(userRows.size());
-		for (auto &[user, iter]: userRows)
-			if (user->server == server)
-				remove_users.push_back(user);
-		for (PingPong::User *user: remove_users)
-			eraseUser(user);
-
-		serverModel->erase(serverRows.at(server));
-		serverRows.erase(server);
-		views.erase(server);
-	}
-
-	void MainBox::eraseChannel(PingPong::Channel *channel) {
-		if (channelRows.count(channel) == 0)
-			return;
-		serverModel->erase(channelRows.at(channel));
-		channelRows.erase(channel);
-		views.erase(channel);
-		if (activeView == channel)
-			focusView(channel->server);
-	}
-
-	void MainBox::eraseUser(PingPong::User *user) {
-		if (userRows.count(user) == 0)
-			return;
-		serverModel->erase(userRows.at(user));
-		userRows.erase(user);
-		views.erase(user);
-		if (activeView == user)
-			focusView(user->server);
-	}
-
 	void MainBox::addStatus(const std::string &line, bool pangoize) {
-		getLineView(this).add(line, pangoize);
+		getLineView(&serverTree).add(line, pangoize);
 	}
 
 	void MainBox::updateChannel(PingPong::Channel &channel) {
@@ -224,7 +124,7 @@ namespace Reden {
 	}
 
 	bool MainBox::inStatus() const {
-		return activeView == this;
+		return activeView == &serverTree;
 	}
 
 	LineView & MainBox::active() {
@@ -232,25 +132,25 @@ namespace Reden {
 	}
 
 	PingPong::Server * MainBox::activeServer() {
-		if (serverRows.count(activeView) != 0)
+		if (serverTree.serverRows.count(activeView) != 0)
 			return reinterpret_cast<PingPong::Server *>(activeView);
 		// Ugly!
 		PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(activeView);
-		if (channelRows.count(channel) != 0)
+		if (serverTree.channelRows.count(channel) != 0)
 			return channel->server;
 		return nullptr;
 	}
 
 	PingPong::Channel * MainBox::activeChannel() {
 		PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(activeView);
-		if (channelRows.count(channel) != 0)
+		if (serverTree.channelRows.count(channel) != 0)
 			return channel;
 		return nullptr;
 	}
 
 	PingPong::User * MainBox::activeUser() {
 		PingPong::User *user = reinterpret_cast<PingPong::User *>(activeView);
-		if (userRows.count(user) != 0)
+		if (serverTree.userRows.count(user) != 0)
 			return user;
 		return nullptr;
 	}
@@ -289,6 +189,30 @@ namespace Reden {
 			topicLabel.set_text(topic);
 	}
 
+	void MainBox::add(PingPong::Channel *channel, bool focus) {
+		serverTree.add(channel, focus);
+	}
+
+	void MainBox::add(PingPong::Server *server, bool focus) {
+		serverTree.add(server, focus);
+	}
+
+	void MainBox::add(PingPong::User *user, bool focus) {
+		serverTree.add(user, focus);
+	}
+
+	void MainBox::erase(PingPong::Channel *channel) {
+		serverTree.erase(channel, activeView);
+	}
+
+	void MainBox::erase(PingPong::Server *server) {
+		serverTree.erase(server, activeView);
+	}
+
+	void MainBox::erase(PingPong::User *user) {
+		serverTree.erase(user, activeView);
+	}
+
 	void MainBox::focusView(void *ptr) {
 		LineView *view;
 		focusView(ptr, view);
@@ -304,13 +228,13 @@ namespace Reden {
 		line_out = &view;
 		chatScrolled.set_child(view);
 		userModel->clear();
-		if (serverRows.count(ptr) != 0) {
-			serverTree.get_selection()->select(serverRows.at(ptr));
+		if (serverTree.serverRows.count(ptr) != 0) {
+			serverTree.get_selection()->select(serverTree.serverRows.at(ptr));
 			parent.irc->activeServer = reinterpret_cast<PingPong::Server *>(ptr);
-		} else if (channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
+		} else if (serverTree.channelRows.count(reinterpret_cast<PingPong::Channel *>(ptr)) != 0) {
 			PingPong::Channel *channel = reinterpret_cast<PingPong::Channel *>(ptr);
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
-			serverTree.get_selection()->select(channelRows.at(channel));
+			serverTree.get_selection()->select(serverTree.channelRows.at(channel));
 			presentUserRows.clear();
 			userModel->clear();
 			for (const std::string &user: userSets[channel]) {
@@ -319,9 +243,9 @@ namespace Reden {
 				(*row)[columns.name] = static_cast<char>(channel->getHats(user).highest()) + user;
 				(*row)[columns.pointer] = channel;
 			}
-		} else if (userRows.count(reinterpret_cast<PingPong::User *>(ptr)) != 0) {
+		} else if (serverTree.userRows.count(reinterpret_cast<PingPong::User *>(ptr)) != 0) {
 			PingPong::User *user = reinterpret_cast<PingPong::User *>(ptr);
-			serverTree.get_selection()->select(userRows.at(user));
+			serverTree.get_selection()->select(serverTree.userRows.at(user));
 			presentUserRows.clear();
 			userModel->clear();
 			std::unordered_set<std::string> added_users;
@@ -335,16 +259,6 @@ namespace Reden {
 				(*row)[columns.pointer] = user;
 			}
 		}
-	}
-
-	void MainBox::serverCursorChanged() {
-		if (auto iter = serverTree.get_selection()->get_selected())
-			focusView((*iter)[columns.pointer]);
-	}
-
-	void MainBox::serverRowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
-		if (auto iter = serverModel->get_iter(path))
-			focusView((*iter)[columns.pointer]);
 	}
 
 	int MainBox::compareUsers(const Gtk::TreeModel::const_iterator &left, const Gtk::TreeModel::const_iterator &right) {
@@ -373,13 +287,13 @@ namespace Reden {
 
 		if (keycode == 111 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // up arrow
 			if (auto iter = serverTree.get_selection()->get_selected()) {
-				auto path = serverModel->get_path(iter);
+				auto path = serverTree.getPath(iter);
 				if (--iter) {
 					serverTree.get_selection()->select(iter);
-					serverCursorChanged();
+					serverTree.cursorChanged();
 				} else if (1 < path.size() && path.up()) {
 					serverTree.get_selection()->select(path);
-					serverCursorChanged();
+					serverTree.cursorChanged();
 				}
 			}
 
@@ -388,14 +302,14 @@ namespace Reden {
 
 		if (keycode == 116 && (modifiers & Gdk::ModifierType::ALT_MASK) == Gdk::ModifierType::ALT_MASK) { // down arrow
 			if (auto iter = serverTree.get_selection()->get_selected()) {
-				auto path = serverModel->get_path(iter);
+				auto path = serverTree.getPath(iter);
 				if (++iter) {
 					serverTree.get_selection()->select(iter);
-					serverCursorChanged();
+					serverTree.cursorChanged();
 				} else {
 					path.down();
 					serverTree.get_selection()->select(path);
-					serverCursorChanged();
+					serverTree.cursorChanged();
 				}
 			}
 
