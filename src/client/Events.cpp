@@ -62,6 +62,12 @@ namespace Reden {
 			const std::string content = ev->content;
 			if (ev->isChannel()) {
 				const auto channel = ev->server->getChannel(ev->where, true);
+				if (ev->speaker->name == "***") {
+					if (ev->content == "Buffer Playback...")
+						playbackModeChannels.insert(channel);
+					else if (ev->content == "PlaybackComplete.")
+						playbackModeChannels.erase(channel);
+				}
 				const std::string name = channel->withHat(ev->speaker);
 				const bool is_self = ev->speaker->isSelf();
 				window.queue([this, content, channel, name, is_self] {

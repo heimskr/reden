@@ -2,6 +2,7 @@
 
 #include <gtkmm.h>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -15,6 +16,7 @@
 
 namespace PingPong {
 	class IRC;
+	class Channel;
 }
 
 namespace Reden {
@@ -64,6 +66,8 @@ namespace Reden {
 			RedenWindow &window;
 			CommandCompleter completer;
 			std::multimap<Glib::ustring, Command> commandHandlers;
+			/** A set of all channels that are in ZNC's playback mode. */
+			std::unordered_set<std::shared_ptr<PingPong::Channel>> playbackModeChannels;
 
 // client/Commands.cpp
 
