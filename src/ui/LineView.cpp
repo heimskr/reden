@@ -37,6 +37,19 @@ namespace Reden {
 		setBold(topicTag);
 		setBold(selfTag);
 		endMark = get_buffer()->create_mark(get_buffer()->end(), false);
+		click = Gtk::GestureClick::create();
+		click->signal_pressed().connect([this](int, double x, double y) {
+			Gtk::TextBuffer::const_iterator iter;
+			int trailing, bx, by;
+			window_to_buffer_coords(Gtk::TextWindowType::TEXT, x, y, bx, by);
+			if (!get_iter_at_position(iter, trailing, bx, by))
+				return;
+			std::cout << '\'' << Glib::ustring(1, iter.get_char()) << "'\n";
+
+			for (auto &tag: iter.get_tags())
+				std::cout << "tag[" << tag->property_name() << "]\n";
+		});
+		add_controller(click);
 	}
 
 	LineView & LineView::add(const Glib::ustring &text, bool pangoize) {

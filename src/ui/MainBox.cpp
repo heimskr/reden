@@ -167,7 +167,7 @@ namespace Reden {
 
 	LineView & MainBox::getLineView(void *ptr) {
 		if (views.count(ptr) == 0)
-			return views.emplace(ptr, LineView()).first->second;
+			return views.try_emplace(ptr).first->second;
 		return views.at(ptr);
 	}
 
@@ -177,7 +177,7 @@ namespace Reden {
 
 	LineView & MainBox::operator[](void *ptr) {
 		if (views.count(ptr) == 0)
-			return views.emplace(ptr, LineView()).first->second;
+			return views.try_emplace(ptr).first->second;
 		return views.at(ptr);
 	}
 

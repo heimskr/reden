@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include <gtkmm.h>
 #include <ctime>
 #include <deque>
@@ -62,6 +62,7 @@ namespace Reden {
 			bool wasAtEnd = false;
 			Glib::RefPtr<Gtk::TextBuffer::Mark> endMark;
 			std::vector<std::unique_ptr<Gtk::Widget>> widgets;
+			Glib::RefPtr<Gtk::GestureClick> click;
 
 			static Glib::ustring makeTimestamp(int hour, int minute, int second);
 			static Glib::ustring makeTimestamp(time_t);
