@@ -58,6 +58,15 @@ namespace Reden::Util {
 	 *  words in the string, the length of the string is returned. */
 	size_t lastIndexOfWord(const Glib::ustring &, size_t n);
 
+	/** Trims spaces and tabs from the start of a string. */
+	Glib::ustring & ltrim(Glib::ustring &);
+
+	/** Trims spaces and tabs from the end of a string. */
+	Glib::ustring & rtrim(Glib::ustring &);
+
+	/** Trims spaces and tabs from both ends of a string. */
+	Glib::ustring & trim(Glib::ustring &);
+
 	/** Treats a range like a circular buffer and finds the next value after a given value. If the given value isn't
 	 *  present in the range, the function returns the value at the beginning of the range. If the range is empty, the
 	 *  function throws std::invalid_argument. */

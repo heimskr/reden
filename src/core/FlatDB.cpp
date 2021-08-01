@@ -24,19 +24,18 @@ namespace Reden {
 		if (equals == 0 || equals == str.find_first_not_of(" "))
 			throw std::invalid_argument("Empty key in key-value pair");
 
-		Glib::ustring key = str.substr(0, equals);
-		formicine::util::trim(key);
+		Glib::ustring key = formicine::util::trim(str.substr(0, equals));
 
-		for (char ch: key) {
+		for (char ch: key)
 			if (!std::isalnum(ch) && ch != '.' && ch != '_')
 				throw std::invalid_argument("Key isn't alphanumeric, '.' or '_' in key-value pair");
-		}
 
-		return {key, formicine::util::trim(str.substr(equals + 1))};
+		Glib::ustring out = str.substr(equals + 1);
+		return {key, Util::trim(out)};
 	}
 
 	Glib::ustring FlatDB::parseString(Glib::ustring value) {
-		value = formicine::util::trim(std::string(value));
+		Util::trim(value);
 		const size_t vlength = value.length();
 
 		// Special case: an empty value represents an empty string, same as a pair of double quotes.

@@ -217,4 +217,34 @@ namespace Reden::Util {
 
 		return length;
 	}
+
+	Glib::ustring & ltrim(Glib::ustring &str) {
+		if (str.empty())
+			return str;
+
+		const size_t first = str.find_first_not_of(" \t\r\n");
+		if (first == Glib::ustring::npos)
+			str.clear();
+		else
+			str.erase(0, first);
+
+		return str;
+	}
+
+	Glib::ustring & rtrim(Glib::ustring &str) {
+		if (str.empty())
+			return str;
+
+		gunichar back = str[str.size() - 1];
+		while (back == ' ' || back == '\t' || back == '\r' || back == '\n') {
+			str.erase(str.size() - 1, 1);
+			back = str[str.size() - 1];
+		}
+
+		return str;
+	}
+
+	Glib::ustring & trim(Glib::ustring &str) {
+		return ltrim(rtrim(str));
+	}
 }
