@@ -22,23 +22,29 @@ namespace Reden {
 
 	struct Format {
 		bool bold = false, underlined = false;
-		int color = -1;
+		int foreground = -1, background = -1;
 		Format() {}
+		bool isFormatted() const {
+			return bold || underlined || foreground != -1 || background != -1;
+		}
 		operator Glib::ustring() const {
 			Glib::ustring out = "<span";
 			if (bold)
 				out += " weight=\"bold\"";
 			if (underlined)
 				out += " underline=\"single\"";
-			if (0 <= color && color < 99)
-				out += " color=\"" + colorNames[color] + "\"";
+			if (0 <= foreground && foreground < 99)
+				out += " foreground=\"" + colorNames[foreground] + "\"";
+			if (0 <= background && background < 99)
+				out += " background=\"" + colorNames[background] + "\"";
 			return out + ">";
 		}
 	};
 
+	// I'm sort of sorry for this.
 	Glib::ustring irc2pango(Glib::ustring irc) {
 		using Glib::Markup::escape_text;
-		enum class State {Normal, Color};
+		enum class State {Normal, ExitForeground, Foreground, Background};
 
 		for (gunichar ch: {'\x02', '\x03', '\x1f'})
 			if (std::count(irc.begin(), irc.end(), ch) % 2 == 1)
@@ -53,29 +59,75 @@ namespace Reden {
 
 		auto flush_buffer = [&] {
 			out += escape_text(text_buffer);
-			if (in_span)
+			if (in_span) {
 				out += "</span>";
-			else
-				in_span = true;
+				in_span = false;
+			}
 			text_buffer.clear();
 		};
 
+		auto add_format = [&] {
+			if (format.isFormatted()) {
+				out += format;
+				in_span = true;
+			}
+		};
+
 		for (gunichar ch: irc) {
-			if (state == State::Color) {
+			if (state == State::ExitForeground) {
+				if (ch == ',') {
+					state = State::Background;
+					continue;
+				} else {
+					state = State::Normal;
+					flush_buffer();
+					add_format();
+				}
+			}
+
+			if (state == State::Foreground) {
+				if ('0' <= ch && ch <= '9' && color_buffer.size() < 2) {
+					color_buffer.push_back(static_cast<char>(ch));
+					if (color_buffer.size() == 2) {
+						format.foreground = atoi(color_buffer.c_str());
+						color_buffer.clear();
+						state = State::ExitForeground;
+						continue;
+					}
+				} else {
+					if (!color_buffer.empty()) {
+						flush_buffer();
+						format.foreground = atoi(color_buffer.c_str());
+					}
+					color_buffer.clear();
+					if (ch == ',') {
+						state = State::Background;
+					} else {
+						state = State::Normal;
+						if (format.foreground != -1)
+							add_format();
+					}
+				}
+			} else if (state == State::Background) {
 				if ('0' <= ch && ch <= '9' && color_buffer.size() < 2) {
 					color_buffer.push_back(static_cast<char>(ch));
 					if (color_buffer.size() == 2) {
 						flush_buffer();
-						format.color = atoi(color_buffer.c_str());
+						format.background = atoi(color_buffer.c_str());
 						color_buffer.clear();
-						out += format;
+						add_format();
 						state = State::Normal;
 						continue;
 					}
 				} else {
+					if (!color_buffer.empty()) {
+						flush_buffer();
+						format.background = atoi(color_buffer.c_str());
+					}
 					color_buffer.clear();
-					format.color = -1;
 					state = State::Normal;
+					if (format.background != -1)
+						add_format();
 				}
 			}
 
@@ -84,22 +136,23 @@ namespace Reden {
 					case '\x02':
 						flush_buffer();
 						format.bold = !format.bold;
-						out += format;
+						add_format();
 						break;
 					case '\x03':
-						if (format.color == -1) {
-							state = State::Color;
+						if (format.foreground == -1 && format.background == -1) {
+							state = State::Foreground;
 						} else {
 							flush_buffer();
-							state = State::Color;
-							format.color = -1;
-							out += format;
+							state = State::Foreground;
+							format.foreground = -1;
+							format.background = -1;
+							add_format();
 						}
 						break;
 					case '\x1f':
 						flush_buffer();
 						format.underlined = !format.underlined;
-						out += format;
+						add_format();
 						break;
 					default:
 						text_buffer.push_back(ch);
@@ -111,13 +164,10 @@ namespace Reden {
 		if (!text_buffer.empty() || in_span)
 			flush_buffer();
 		
-		static std::regex basic_span_regex("<span>([^<>]+)</span>");
 		static std::regex empty_span_regex("<span[^>]*></span>");
-
-		std::string out_string = out;
-		std::string unempty, unbasic;
+		const std::string out_string = out;
+		std::string unempty;
 		std::regex_replace(std::back_inserter(unempty), out_string.begin(), out_string.end(), empty_span_regex, "");
-		std::regex_replace(std::back_inserter(unbasic), unempty.begin(), unempty.end(), basic_span_regex, "$1");
-		return unbasic;
+		return unempty;
 	}
 }

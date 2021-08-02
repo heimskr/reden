@@ -8,14 +8,16 @@
 namespace Reden::Tests {
 	bool irc2pangoTests() {
 		static std::vector<std::pair<Glib::ustring, Glib::ustring>> tests {
+			{"\x03" "4,11Foo \x02" "Bar\x02 Baz \x03" "8,9 Quux\x03", "<span foreground=\"red\" background=\"cyan\">Foo </span><span weight=\"bold\" foreground=\"red\" background=\"cyan\">Bar</span><span foreground=\"red\" background=\"cyan\"> Baz </span><span foreground=\"yellow\" background=\"green\"> Quux</span>"},
 			{"Foo", "Foo"},
 			{"Foo\x02" "Bar", "Foo<span weight=\"bold\">Bar</span>"},
-			{"\x03" "04foo\x02" "bar\x03" "baz\x02", "<span color=\"red\">foo</span><span weight=\"bold\" color=\"red\">bar</span><span weight=\"bold\">baz</span>"},
+			{"\x03" "04foo\x02" "bar\x03" "baz\x02", "<span foreground=\"red\">foo</span><span weight=\"bold\" foreground=\"red\">bar</span><span weight=\"bold\">baz</span>"},
 			{"\x02" "Foo", "<span weight=\"bold\">Foo</span>"},
 			{"\x02" "Foo\x02", "<span weight=\"bold\">Foo</span>"},
 			{"\x02" "Foo\x03", "<span weight=\"bold\">Foo</span>"},
 			{"\x02\x03\x02\x03\x03\x02", ""},
-			{"\x03" "04Foo \x02" "Bar\x02 Baz \x03" "08 Quux\x03", "<span color=\"red\">Foo </span><span weight=\"bold\" color=\"red\">Bar</span><span color=\"red\"> Baz </span><span color=\"yellow\"> Quux</span>"},
+			{"\x03" "04Foo \x02" "Bar\x02 Baz \x03" "08 Quux\x03", "<span foreground=\"red\">Foo </span><span weight=\"bold\" foreground=\"red\">Bar</span><span foreground=\"red\"> Baz </span><span foreground=\"yellow\"> Quux</span>"},
+			{"\x03" "4Foo \x02" "Bar\x02 Baz \x03" "8 Quux\x03", "<span foreground=\"red\">Foo </span><span weight=\"bold\" foreground=\"red\">Bar</span><span foreground=\"red\"> Baz </span><span foreground=\"yellow\"> Quux</span>"},
 		};
 
 		if (tests.empty()) {
