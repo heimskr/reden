@@ -40,6 +40,10 @@ namespace Reden {
 				PingPong::PrivmsgCommand(active.getUser(), message).send();
 		}, &completePlain);
 
+		add("msg", 2, -1, true, [&](PingPong::Server *server, const InputLine &il) {
+			PingPong::PrivmsgCommand(server, il.first(), il.rest()).send();
+		}, &completePlain);
+
 		add("part", 0, -1, true, [this](PingPong::Server *server, const InputLine &il) {
 			PingPong::Channel *active_channel = nullptr;
 
