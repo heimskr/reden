@@ -384,6 +384,6 @@ namespace Reden {
 		if (!userModelUpdating)
 			if (auto iter = userTree.get_selection()->get_selected())
 				if (PingPong::User *user = reinterpret_cast<PingPong::User *>((void *) (*iter)[columns.pointer]))
-					add(reinterpret_cast<PingPong::User *>((void *) (*iter)[columns.pointer]), true);
+					add(user, true);
 	}
 }
