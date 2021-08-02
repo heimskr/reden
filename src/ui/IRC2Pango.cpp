@@ -23,10 +23,13 @@ namespace Reden {
 	struct Format {
 		bool bold = false, underlined = false;
 		int foreground = -1, background = -1;
+
 		Format() {}
+
 		bool isFormatted() const {
 			return bold || underlined || foreground != -1 || background != -1;
 		}
+
 		operator Glib::ustring() const {
 			Glib::ustring out = "<span";
 			if (bold)
@@ -38,6 +41,11 @@ namespace Reden {
 			if (0 <= background && background < 99)
 				out += " background=\"" + colorNames[background] + "\"";
 			return out + ">";
+		}
+
+		void reset() {
+			bold = underlined = false;
+			foreground = background = -1;
 		}
 	};
 
@@ -148,6 +156,10 @@ namespace Reden {
 							format.background = -1;
 							add_format();
 						}
+						break;
+					case '\x0f':
+						flush_buffer();
+						format.reset();
 						break;
 					case '\x1f':
 						flush_buffer();
