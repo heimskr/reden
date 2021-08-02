@@ -102,6 +102,7 @@ namespace Reden {
 			std::unordered_map<void *, Glib::ustring> topics;
 			std::unordered_map<std::string, Gtk::TreeModel::iterator> presentUserRows;
 			std::unordered_map<void *, std::set<std::string>> userSets;
+			bool userModelUpdating = false;
 
 			Client & client();
 
@@ -111,6 +112,7 @@ namespace Reden {
 			int compareUsers(const Gtk::TreeModel::const_iterator &, const Gtk::TreeModel::const_iterator &);
 			bool keyPressed(guint, guint, Gdk::ModifierType);
 			void entryActivated();
+			void usersCursorChanged();
 
 			template <typename T>
 			void focusView(void *ptr, T *parent) {

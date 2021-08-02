@@ -20,6 +20,7 @@ namespace Reden {
 		userTree.set_activate_on_single_click(true);
 		userTree.set_can_focus(false);
 		userTree.add_css_class("user-tree");
+		userTree.signal_cursor_changed().connect(sigc::mem_fun(*this, &MainBox::usersCursorChanged), false);
 		appendColumn(userTree, "Name", columns.name);
 		serversScrolled.set_child(*serverTree);
 		usersScrolled.set_child(userTree);
@@ -89,11 +90,13 @@ namespace Reden {
 				else
 					userSets[&channel].insert(user->name);
 				if (presentUserRows.count(user->name) == 0) {
+					userModelUpdating = true;
 					auto row = userModel->append();
 					presentUserRows.emplace(user->name, row);
 					(*row)[columns.name] = channel.withHat(user, true);
-					(*row)[columns.pointer] = &channel;
+					(*row)[columns.pointer] = user.get();
 					sort = true;
+					userModelUpdating = false;
 				} else {
 					auto row = presentUserRows.at(user->name);
 					Glib::ustring new_name = channel.withHat(user, true);
@@ -231,6 +234,7 @@ namespace Reden {
 		LineView &view = getLineView(ptr);
 		line_out = &view;
 		chatScrolled.set_child(view);
+		userModelUpdating = true;
 		userModel->clear();
 		if (serverTree->serverRows.count(ptr) != 0) {
 			serverTree->get_selection()->select(serverTree->serverRows.at(ptr));
@@ -241,18 +245,16 @@ namespace Reden {
 			topicLabel.set_text(topics[ptr] = std::string(channel->topic));
 			serverTree->get_selection()->select(serverTree->channelRows.at(channel));
 			presentUserRows.clear();
-			userModel->clear();
 			for (const std::string &user: userSets[channel]) {
 				auto row = userModel->append();
 				presentUserRows[user] = row;
 				(*row)[columns.name] = static_cast<char>(channel->getHats(user).highest()) + user;
-				(*row)[columns.pointer] = channel;
+				(*row)[columns.pointer] = channel->server->getUser(user).get();
 			}
 		} else if (serverTree->userRows.count(reinterpret_cast<PingPong::User *>(ptr)) != 0) {
 			PingPong::User *user = reinterpret_cast<PingPong::User *>(ptr);
 			serverTree->get_selection()->select(serverTree->userRows.at(user));
 			presentUserRows.clear();
-			userModel->clear();
 			std::unordered_set<std::string> added_users;
 			for (const std::string &user_str: {user->server->getSelf()->name, user->name}) {
 				if (added_users.count(user_str) != 0)
@@ -264,6 +266,7 @@ namespace Reden {
 				(*row)[columns.pointer] = user;
 			}
 		}
+		userModelUpdating = false;
 	}
 
 	int MainBox::compareUsers(const Gtk::TreeModel::const_iterator &left, const Gtk::TreeModel::const_iterator &right) {
@@ -375,5 +378,12 @@ namespace Reden {
 		}
 
 		// afterInput(il);
+	}
+
+	void MainBox::usersCursorChanged() {
+		if (!userModelUpdating)
+			if (auto iter = userTree.get_selection()->get_selected())
+				if (PingPong::User *user = reinterpret_cast<PingPong::User *>((void *) (*iter)[columns.pointer]))
+					add(reinterpret_cast<PingPong::User *>((void *) (*iter)[columns.pointer]), true);
 	}
 }
