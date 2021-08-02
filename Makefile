@@ -4,7 +4,7 @@ else
 BUILDFLAGS := -g -O0
 endif
 
-COMPILER   ?= g++
+COMPILER   ?= clang++
 CPPFLAGS   := -Wall -Wextra -std=c++20 $(BUILDFLAGS) -Ipingpong/include -Ipingpong/date/include
 PPSRC      := $(shell find pingpong/src -name \*.cpp)
 PPOBJ      := $(patsubst pingpong/src/%.cpp,pingpong/build/%.o,$(PPSRC))

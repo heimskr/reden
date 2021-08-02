@@ -126,15 +126,15 @@ namespace Reden {
 		});
 
 		PingPong::Events::listen<PingPong::QuitEvent>([this](PingPong::QuitEvent *ev) {
-			const auto &server = ev->server;
 			if (ev->who->isSelf()) {
+				const auto &server = ev->server;
 				window.queue([this, server] {
 					window.box.erase(server);
 				});
 			} else {
 				const auto &user = ev->who;
 				const auto &reason = ev->content;
-				window.queue([this, server, user, reason] {
+				window.queue([this, user, reason] {
 					for (const std::weak_ptr<PingPong::Channel> &weak_channel: user->channels)
 						if (auto channel = weak_channel.lock())
 							if (window.box.hasLineView(channel.get()))

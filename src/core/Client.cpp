@@ -33,7 +33,7 @@ namespace Reden {
 
 		const size_t command_length = command_name.length();
 
-		for (const std::pair<Glib::ustring, Command> &pair: commandHandlers) {
+		for (const std::pair<const Glib::ustring, Command> &pair: commandHandlers) {
 			const Glib::ustring &candidate_name = pair.first;
 			if (candidate_name.substr(0, command_length) == command_name)
 				matches.push_back(candidate_name);

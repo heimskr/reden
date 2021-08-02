@@ -75,7 +75,7 @@ namespace Reden {
 
 	std::vector<Glib::ustring> startsWith(const Glib::ustring &str) {
 		std::vector<Glib::ustring> out;
-		for (const std::pair<Glib::ustring, DefaultConfigKey> &pair: registered) {
+		for (const std::pair<const Glib::ustring, DefaultConfigKey> &pair: registered) {
 			const Glib::ustring &full = pair.first;
 			const Glib::ustring &key = full.substr(full.find('.') + 1);
 			if (key.find(str) == 0 || full.find(str) == 0)
