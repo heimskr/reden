@@ -10,6 +10,7 @@
 #include "pingpong/events/Raw.h"
 #include "pingpong/events/ServerStatus.h"
 #include "pingpong/events/Topic.h"
+#include "pingpong/events/TopicUpdated.h"
 
 namespace Reden {
 	void Client::addEvents() {
@@ -195,6 +196,13 @@ namespace Reden {
 			window.queue([this, channel, who] {
 				window.box.setTopic(channel.get(), std::string(channel->topic));
 				window.box[channel].topicChanged(channel, who, std::string(channel->topic));
+			});
+		});
+
+		PingPong::Events::listen<PingPong::TopicUpdatedEvent>([this](PingPong::TopicUpdatedEvent *ev) {
+			auto channel = ev->channel;
+			window.queue([this, channel] {
+				window.box.setTopic(channel.get(), std::string(channel->topic));
 			});
 		});
 	}
