@@ -67,7 +67,6 @@ namespace Reden {
 			void focusView(PingPong::Server *);
 			void focusView(PingPong::User *);
 			void focusVoid(void *);
-			void rowActivated(const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *);
 			void secondaryClicked(int, double, double);
 			void close();
 			void clear();

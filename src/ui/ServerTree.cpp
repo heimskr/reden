@@ -18,7 +18,6 @@ namespace Reden {
 		set_can_focus(false);
 		add_css_class("server-tree");
 		appendColumn(*this, "Name", columns.name);
-		signal_row_activated().connect(sigc::mem_fun(*this, &ServerTree::rowActivated));
 		signal_cursor_changed().connect(sigc::mem_fun(*this, &ServerTree::cursorChanged));
 		addStatusRow();
 
@@ -183,11 +182,6 @@ namespace Reden {
 
 	void ServerTree::focusVoid(void *ptr) {
 		signal_focus_requested_.emit(ptr);
-	}
-
-	void ServerTree::rowActivated(const Gtk::TreeModel::Path &path, Gtk::TreeViewColumn *) {
-		if (auto iter = model->get_iter(path))
-			focusVoid((*iter)[columns.pointer]);
 	}
 
 	void ServerTree::secondaryClicked(int, double x, double y) {
