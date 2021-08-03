@@ -3,6 +3,7 @@
 #include "ui/RedenWindow.h"
 
 #include "pingpong/commands/Join.h"
+#include "pingpong/commands/Nick.h"
 #include "pingpong/commands/Part.h"
 #include "pingpong/commands/Privmsg.h"
 #include "pingpong/core/Server.h"
@@ -43,6 +44,14 @@ namespace Reden {
 		add("msg", 2, -1, true, [&](PingPong::Server *server, const InputLine &il) {
 			PingPong::PrivmsgCommand(server, il.first(), il.rest()).send();
 		}, &completePlain);
+
+		add("nick", 0, 1, true, [&](PingPong::Server *server, const InputLine &il) {
+			std::cout << "server[" << server << "]\n";
+			if (il.args.size() == 0)
+				window.box.active().add("Current nick: " + server->getNick());
+			else
+				PingPong::NickCommand(server, il.first()).send();
+		});
 
 		add("part", 0, -1, true, [this](PingPong::Server *server, const InputLine &il) {
 			PingPong::Channel *active_channel = nullptr;
