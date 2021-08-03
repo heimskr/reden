@@ -64,6 +64,11 @@ namespace Reden {
 		serverTree->signal_erase_requested().connect([this](void *ptr) { views.erase(ptr);   });
 		serverTree->signal_clear_requested().connect([this](void *ptr) { views[ptr].clear(); });
 		focusView(serverTree.get());
+
+		keyController->signal_key_released().connect([this](guint, guint keycode, Gdk::ModifierType modifiers) {
+			parent.client.onKey({keycode, modifiers});
+		});
+		chatEntry.add_controller(keyController);
 	}
 
 	Client & MainBox::client() {
@@ -312,8 +317,6 @@ namespace Reden {
 
 			return true;
 		}
-
-		parent.client.onKey({keycode, modifiers});
 
 		return false;
 	}

@@ -131,7 +131,6 @@ namespace Reden {
 
 		int cursor = window.box.getCursor();
 
-
 		if ((window.box.inStatus() || window.box.inServer()) && text[0] != '/') {
 			text.insert(0, "/");
 			window.box.setInput(text);
