@@ -71,5 +71,9 @@ namespace Reden {
 			else
 				noChannel(il.first());
 		});
+
+		add("quote", 1, -1, true, [&](PingPong::Server *server, const InputLine &il) {
+			server->quote(il.body);
+		});
 	}
 }
