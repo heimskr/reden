@@ -259,7 +259,7 @@ namespace Reden {
 		if (is_self)
 			append(name, "self");
 		else
-			append(name);
+			append(name, "name");
 		append(">", "bracket").append(" ");
 
 		auto start_mark = Gtk::TextMark::create();
