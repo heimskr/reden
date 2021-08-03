@@ -82,33 +82,18 @@ namespace Reden {
 		auto lock = channel.lockUsers();
 		userSets[&channel].clear();
 		if (activeView == &channel) {
-			bool sort = false;
-			for (auto &user: channel.users) {
-				const auto highest = channel.getHats(user).highest();
-				if (highest == PingPong::Hat::None)
-					userSets[&channel].insert(user->name);
-				else
-					userSets[&channel].insert(user->name);
-				if (presentUserRows.count(user->name) == 0) {
-					userModelUpdating = true;
-					auto row = userModel->append();
-					presentUserRows.emplace(user->name, row);
-					(*row)[columns.name] = channel.withHat(user, true);
-					(*row)[columns.pointer] = user.get();
-					sort = true;
-					userModelUpdating = false;
-				} else {
-					auto row = presentUserRows.at(user->name);
-					Glib::ustring new_name = channel.withHat(user, true);
-					if (Glib::ustring((*row)[columns.name]) != new_name) {
-						(*row)[columns.name] = new_name;
-						sort = true;
-					}
-				}
+			userModelUpdating = true;
+			userModel->clear();
+			for (const auto &user: channel.users) {
+				userSets[&channel].insert(user->name);
+				auto row = userModel->append();
+				presentUserRows.emplace(user->name, row);
+				(*row)[columns.name] = channel.withHat(user, true);
+				(*row)[columns.pointer] = user.get();
 			}
 
-			if (sort)
-				userModel->set_sort_column(columns.name, Gtk::SortType::ASCENDING);
+			userModel->set_sort_column(columns.name, Gtk::SortType::ASCENDING);
+			userModelUpdating = false;
 		} else
 			for (auto &user: channel.users)
 				userSets[&channel].insert(user->name);
