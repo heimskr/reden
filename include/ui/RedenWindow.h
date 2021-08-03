@@ -32,6 +32,9 @@ namespace Reden {
 					bool use_markup = false);
 			void error(const Glib::ustring &message, bool modal = true, bool use_markup = false);
 
+			/** Loads the built-in CSS, then the provided string, then custom.css if it exists. */
+			void loadCSS(const std::string & = "");
+
 		private:
 			Glib::RefPtr<Gtk::Builder> builder;
 			Glib::RefPtr<Gtk::CssProvider> cssProvider;

@@ -25,15 +25,7 @@ namespace Reden {
 		set_titlebar(*header);
 
 		cssProvider = Gtk::CssProvider::create();
-		if (FS::fileExists("custom.css")) {
-			try {
-				cssProvider->load_from_data(App::getText("/com/heimskr/reden/style.css") + std::string("\n")
-					+ FS::readFile("custom.css"));
-			} catch (const std::exception &) {
-				cssProvider->load_from_resource("/com/heimskr/reden/style.css");
-			}
-		} else
-			cssProvider->load_from_resource("/com/heimskr/reden/style.css");
+		loadCSS();
 		Gtk::StyleContext::add_provider_for_display(Gdk::Display::get_default(), cssProvider,
 			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
@@ -111,5 +103,20 @@ namespace Reden {
 
 	void RedenWindow::error(const Glib::ustring &message, bool modal, bool use_markup) {
 		alert(message, Gtk::MessageType::ERROR, modal, use_markup);
+	}
+
+	void RedenWindow::loadCSS(const std::string &css) {
+		if (FS::fileExists("custom.css")) {
+			try {
+				cssProvider->load_from_data(App::getText("/com/heimskr/reden/style.css") + std::string("\n") + css
+					+ "\n" + FS::readFile("custom.css"));
+				return;
+			} catch (const std::exception &) {}
+		}
+
+		if (!css.empty()) {
+			cssProvider->load_from_data(App::getText("/com/heimskr/reden/style.css") + std::string("\n") + css);
+		} else
+			cssProvider->load_from_resource("/com/heimskr/reden/style.css");
 	}
 }
