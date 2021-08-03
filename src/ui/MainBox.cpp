@@ -309,6 +309,8 @@ namespace Reden {
 			return true;
 		}
 
+		parent.client.onKey({keycode, modifiers});
+
 		return false;
 	}
 

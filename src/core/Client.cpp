@@ -91,6 +91,10 @@ namespace Reden {
 		return window.irc;
 	}
 
+	void Client::onKey(const Key &key) {
+		completer.onKey(key);
+	}
+
 	void Client::noChannel() {
 		window.box.active().add("No active channel.", false);
 	}
