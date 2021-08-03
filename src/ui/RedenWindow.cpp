@@ -50,6 +50,10 @@ namespace Reden {
 			connect->show();
 		}));
 
+		add_action("reload-css", Gio::ActionMap::ActivateSlot([this] {
+			loadCSS();
+		}));
+
 		functionQueueDispatcher.connect([this] {
 			auto lock = std::unique_lock(functionQueueMutex);
 			for (auto fn: functionQueue)

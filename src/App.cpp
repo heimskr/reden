@@ -12,6 +12,8 @@ namespace Reden {
 	void App::on_startup() {
 		Gtk::Application::on_startup();
 		set_accel_for_action("win.connect", "<Ctrl>o");
+		set_accel_for_action("win.disconnect", "<Ctrl>d");
+		set_accel_for_action("win.reload-css", "<Ctrl>r");
 	}
 
 	void App::on_activate() {

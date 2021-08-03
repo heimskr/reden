@@ -6,6 +6,7 @@
 #include "core/Client.h"
 #include "config/ConfigDB.h"
 #include "config/Defaults.h"
+#include "ui/RedenWindow.h"
 
 #include "lib/formicine/ansi.h"
 
@@ -158,6 +159,11 @@ namespace Reden {
 		// Miscellaneous
 		registerKey("appearance", "allow_empty_hats", false, validateBool, CACHE_BOOL(appearanceAllowEmptyHats),
 			"Whether to use a blank hat string instead of a space when a user has no hats.");
+
+		registerKey("appearance", "timestamp_foreground", "gray", validateString, [](ConfigDB &db, const Value &val) {
+			db.parent.cache.timestampForeground = std::get<Glib::ustring>(val);
+			db.parent.window.box.updateViews();
+		}, "The text color of timestamps.");
 	}
 
 	void registerFormat() {

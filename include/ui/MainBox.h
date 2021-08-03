@@ -57,6 +57,7 @@ namespace Reden {
 			void erase(PingPong::Channel *);
 			void erase(PingPong::Server *);
 			void erase(PingPong::User *);
+			void updateViews();
 
 			template <typename T>
 			LineView & getLineView(std::shared_ptr<T> ptr) {

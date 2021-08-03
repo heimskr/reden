@@ -58,7 +58,7 @@ namespace Reden {
 						return;
 					Glib::ustring error;
 					long port;
-					if (text.find_first_of("=\n\r\t") != Glib::ustring::npos)
+					if (text.find_first_of("=\n\r\t\"") != Glib::ustring::npos)
 						error = "Invalid name.";
 					else if (!formicine::util::parse_long(portEntry.get_text(), port) || port < 1 || INT_MAX < port)
 						error = "Invalid port.";

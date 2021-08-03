@@ -3,13 +3,14 @@
 #include <cmath>
 #include <sstream>
 
+#include "config/Cache.h"
 #include "core/Util.h"
 #include "ui/IRC2Pango.h"
 #include "ui/LineView.h"
 #include "pingpong/core/Channel.h"
 
 namespace Reden {
-	LineView::LineView(): Gtk::TextView() {
+	LineView::LineView(ConfigCache &cache_): Gtk::TextView(), cache(cache_) {
 		add_css_class("lineview");
 		set_editable(false);
 		set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
@@ -33,6 +34,7 @@ namespace Reden {
 		   linkTag->property_foreground() = "blue";
 		   timeTag->property_font() = "Monospace";
 		   linkTag->property_underline() = Pango::Underline::SINGLE;
+		loadProperties();
 		setBold(nameTag);
 		setBold(actionTag);
 		setBold(channelTag);
@@ -76,6 +78,10 @@ namespace Reden {
 			set_cursor("text");
 		});
 		add_controller(motion);
+	}
+
+	void LineView::loadProperties() {
+		timeTag->property_foreground() = cache.timestampForeground;
 	}
 
 	LineView & LineView::add(const Glib::ustring &text, bool pangoize) {

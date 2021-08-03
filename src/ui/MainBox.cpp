@@ -62,7 +62,7 @@ namespace Reden {
 			focusView(ptr);
 		});
 		serverTree->signal_erase_requested().connect([this](void *ptr) { views.erase(ptr);   });
-		serverTree->signal_clear_requested().connect([this](void *ptr) { views[ptr].clear(); });
+		serverTree->signal_clear_requested().connect([this](void *ptr) { views.at(ptr).clear(); });
 		focusView(serverTree.get());
 
 		keyController->signal_key_released().connect([this](guint, guint keycode, Gdk::ModifierType modifiers) {
@@ -166,7 +166,7 @@ namespace Reden {
 
 	LineView & MainBox::getLineView(void *ptr) {
 		if (views.count(ptr) == 0)
-			return views.try_emplace(ptr).first->second;
+			return views.try_emplace(ptr, parent.client.cache).first->second;
 		return views.at(ptr);
 	}
 
@@ -176,7 +176,7 @@ namespace Reden {
 
 	LineView & MainBox::operator[](void *ptr) {
 		if (views.count(ptr) == 0)
-			return views.try_emplace(ptr).first->second;
+			return views.try_emplace(ptr, parent.client.cache).first->second;
 		return views.at(ptr);
 	}
 
@@ -212,6 +212,11 @@ namespace Reden {
 
 	void MainBox::erase(PingPong::User *user) {
 		serverTree->erase(user);
+	}
+
+	void MainBox::updateViews() {
+		for (auto &[ptr, view]: views)
+			view.loadProperties();
 	}
 
 	void MainBox::focusView(void *ptr) {

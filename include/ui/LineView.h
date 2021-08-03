@@ -16,6 +16,8 @@ namespace PingPong {
 }
 
 namespace Reden {
+	class ConfigCache;
+
 	class LineView: public Gtk::TextView {
 		public:
 			enum class ParentType {Other, Channel, Server, User};
@@ -23,11 +25,22 @@ namespace Reden {
 			void *parent = nullptr;
 			ParentType type = ParentType::Other;
 
-			LineView();
-			LineView(PingPong::Channel *channel): parent(channel), type(ParentType::Channel) {}
-			LineView(PingPong::Server *server): parent(server), type(ParentType::Server) {}
-			LineView(PingPong::User *user): parent(user), type(ParentType::User) {}
+			LineView() = delete;
+			LineView(ConfigCache &);
+			LineView(ConfigCache &cache_, PingPong::Channel *channel): LineView(cache_) {
+				parent = channel;
+				type = ParentType::Channel;
+			}
+			LineView(ConfigCache &cache_, PingPong::Server *server): LineView(cache_) {
+				parent = server;
+				type = ParentType::Server;
+			}
+			LineView(ConfigCache &cache_, PingPong::User *user): LineView(cache_) {
+				parent = user;
+				type = ParentType::User;
+			}
 
+			void loadProperties();
 			LineView & add(const Glib::ustring &text, bool pangoize = true);
 			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self = false);
 			LineView & addMessage(const Glib::ustring &name, const Glib::ustring &message, bool is_self, int hour,
@@ -58,6 +71,7 @@ namespace Reden {
 			LineView & set(PingPong::User *);
 
 		private:
+			ConfigCache &cache;
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
 			                           modesTag, userTag, topicTag, asteriskTag, selfTag, linkTag;
 			bool alive = true;

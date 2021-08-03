@@ -42,6 +42,10 @@
 				<attribute name="label" translatable="yes">_Disconnect</attribute>
 				<attribute name="action">win.disconnect</attribute>
 			</item>
+			<item>
+				<attribute name="label" translatable="yes">_Reload CSS</attribute>
+				<attribute name="action">win.reload-css</attribute>
+			</item>
 		</section>
 	</menu>
 </interface>

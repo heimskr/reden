@@ -32,7 +32,8 @@ namespace Reden {
 			              serverDefaultUser = getString("server.default_user"),
 			              serverDefaultReal = getString("server.default_real");
 
-			Glib::ustring noticeForeground = getString("appearance.notice_foreground");
+			Glib::ustring noticeForeground = getString("appearance.notice_foreground"),
+			           timestampForeground = getString("appearance.timestamp_foreground");
 
 #define DEF_FORMAT(n, u) Glib::ustring format##n = getString("format."#u);
 			DEF_FORMAT(Action, action);
