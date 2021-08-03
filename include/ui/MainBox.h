@@ -34,6 +34,8 @@ namespace Reden {
 			int getCursor() const;
 			void setCursor(int);
 			bool inStatus() const;
+			/** Returns whether the user is in a server status window (not a channel). */
+			bool inServer() const;
 			LineView & active();
 			PingPong::Server * activeServer();
 			PingPong::Channel * activeChannel();

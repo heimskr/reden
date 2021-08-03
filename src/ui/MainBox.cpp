@@ -119,6 +119,10 @@ namespace Reden {
 		return activeView == serverTree.get();
 	}
 
+	bool MainBox::inServer() const {
+		return serverTree->serverRows.count(activeView) != 0;
+	}
+
 	LineView & MainBox::active() {
 		return getLineView(activeView);
 	}

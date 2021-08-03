@@ -131,12 +131,12 @@ namespace Reden {
 
 		int cursor = window.box.getCursor();
 
-		// if (ui.activeWindow == ui.statusWindow && text[0] != '/') {
-		// 	text.insert(0, "/");
-		// 	window.box.setInput(text);
-		// 	window.box.setCursor(++cursor);
-		// 	ui.input->jumpCursor();
-		// }
+
+		if ((window.box.inStatus() || window.box.inServer()) && text[0] != '/') {
+			text.insert(0, "/");
+			window.box.setInput(text);
+			window.box.setCursor(++cursor);
+		}
 
 		InputLine il = getInputLine(text);
 		auto [windex, sindex] = Util::wordIndices(text, cursor);
@@ -181,15 +181,8 @@ namespace Reden {
 					window.box.setInput(text);
 				window.box.setCursor(cursor);
 			}
-		} else if (window.box.activeServer()) {
-			if (window.box.inStatus() && text[0] != '/') {
-				text.insert(0, "/");
-				window.box.setInput(text);
-				window.box.setCursor(++cursor);
-			}
-
+		} else if (window.box.activeServer())
 			completeMessage(text, cursor);
-		}
 	}
 
 	void Client::completeMessage(Glib::ustring &text, int cursor, int word_offset) {

@@ -16,7 +16,7 @@ namespace Reden {
 	class ServerTree: public Gtk::TreeView {
 		public:
 			// I'm using a void pointer here because serverRows can store both PingPong::Server pointers and also a
-			// dummy pointer to this MainBox for the status window.
+			// dummy pointer to this ServerTree for the status window.
 			std::unordered_map<void *, Gtk::TreeModel::iterator> serverRows;
 			std::unordered_map<PingPong::Channel *, Gtk::TreeModel::iterator> channelRows;
 			std::unordered_map<PingPong::User *, Gtk::TreeModel::iterator> userRows;
