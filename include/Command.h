@@ -47,19 +47,5 @@ namespace Reden {
 	namespace Commands {
 		/** Command name, command */
 		using Pair = std::pair<std::string, Command>;
-
-		void doAlias(Client &, const InputLine &);
-		void doConnect(Client &, const InputLine &);
-		void doDisconnect(Client &, PingPong::Server *, const InputLine &);
-		void doJoin(Client &, PingPong::Server *, const InputLine &);
-		// void doMe(UI::Interface &, const InputLine &);
-		// void doMove(UI::Interface &, const InputLine &);
-		// void doMode(UI::Interface &, PingPong::Server *, const InputLine &);
-		// void doNick(UI::Interface &, PingPong::Server *, const InputLine &);
-		void doPart(Client &, PingPong::Server *, const InputLine &);
-		void doPlugin(Client &, const InputLine &);
-		void doSet(Client &, const InputLine &);
-		// void doSpam(UI::Interface &, const InputLine &);
-		void doTopic(Client &, PingPong::Server *, const InputLine &);
 	}
 }

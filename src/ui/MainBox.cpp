@@ -132,6 +132,10 @@ namespace Reden {
 		return getLineView(activeView);
 	}
 
+	LineView & MainBox::status() {
+		return getLineView(serverTree.get());
+	}
+
 	PingPong::Server * MainBox::activeServer() {
 		if (serverTree->serverRows.count(activeView) != 0)
 			return reinterpret_cast<PingPong::Server *>(activeView);
@@ -217,6 +221,10 @@ namespace Reden {
 	void MainBox::updateViews() {
 		for (auto &[ptr, view]: views)
 			view.loadProperties();
+	}
+
+	void MainBox::focusStatus() {
+		focusView(serverTree.get());
 	}
 
 	void MainBox::focusView(void *ptr) {

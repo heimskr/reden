@@ -111,7 +111,7 @@ namespace Reden {
 
 		// Format
 
-		registerFormat();
+		// registerFormat();
 
 		// Interface
 
@@ -167,6 +167,7 @@ namespace Reden {
 	}
 
 	void registerFormat() {
+		/*
 		registerKey("format", "action", "$header$ $message$", validateString, CACHE_STRING(formatAction),
 			"The format string for actions. Available variables: header, message.");
 
@@ -276,5 +277,6 @@ namespace Reden {
 		registerKey("format", "topic_change", "$!$ $who$ changed the topic of $channel$ to $topic$", validateString,
 			CACHE_STRING(formatTopicChange), "The format string for topic changes. Available variables: -!-, -!!-, "
 			"-!?-, channel, topic, who.");
+		//*/
 	}
 }

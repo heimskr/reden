@@ -37,6 +37,7 @@ namespace Reden {
 			/** Returns whether the user is in a server status window (not a channel). */
 			bool inServer() const;
 			LineView & active();
+			LineView & status();
 			PingPong::Server * activeServer();
 			PingPong::Channel * activeChannel();
 			PingPong::User * activeUser();
@@ -58,6 +59,7 @@ namespace Reden {
 			void erase(PingPong::Server *);
 			void erase(PingPong::User *);
 			void updateViews();
+			void focusStatus();
 
 			template <typename T>
 			LineView & getLineView(std::shared_ptr<T> ptr) {
