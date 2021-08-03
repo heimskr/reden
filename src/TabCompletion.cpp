@@ -223,7 +223,7 @@ namespace Reden {
 		}
 
 		const Glib::ustring &suffix = config.getString("completion", "ping_suffix");
-		formicine::util::remove_suffix(word, suffix);
+		Util::removeSuffix(word, suffix);
 
 		std::deque<Glib::ustring> items;
 		bool do_sort = true; // For channels, the order is important and shouldn't be disturbed.

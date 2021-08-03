@@ -247,4 +247,20 @@ namespace Reden::Util {
 	Glib::ustring & trim(Glib::ustring &str) {
 		return ltrim(rtrim(str));
 	}
+
+	Glib::ustring & removeSuffix(Glib::ustring &word, const Glib::ustring &suffix) {
+		if (word.empty() || suffix.empty())
+			return word;
+
+		const size_t pos = word.rfind(suffix);
+		if (pos != Glib::ustring::npos && pos + suffix.length() == word.length())
+			word.erase(pos);
+
+		return word;
+	}
+
+	Glib::ustring removeSuffix(const Glib::ustring &word, const Glib::ustring &suffix) {
+		Glib::ustring copy = word;
+		return removeSuffix(copy, suffix);
+	}
 }

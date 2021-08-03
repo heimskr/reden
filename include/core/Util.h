@@ -67,6 +67,12 @@ namespace Reden::Util {
 	/** Trims spaces and tabs from both ends of a string. */
 	Glib::ustring & trim(Glib::ustring &);
 
+	/** Removes a suffix from a word if one is present and returns a reference to the now-modified string. */
+	Glib::ustring & removeSuffix(Glib::ustring &word, const Glib::ustring &suffix);
+
+	/** Removes a suffix from a word if one is present. */
+	Glib::ustring removeSuffix(const Glib::ustring &word, const Glib::ustring &suffix);
+
 	/** Treats a range like a circular buffer and finds the next value after a given value. If the given value isn't
 	 *  present in the range, the function returns the value at the beginning of the range. If the range is empty, the
 	 *  function throws std::invalid_argument. */
@@ -91,5 +97,20 @@ namespace Reden::Util {
 		for (int i = 0; i < n; ++i)
 			index = str.find(to_find, i? index + 1 : i);
 		return index;
+	}
+
+	template <typename Iter>
+	void insensitiveSort(Iter begin, Iter end) {
+		std::sort(begin, end, [&](const Glib::ustring &left, const Glib::ustring &right) {
+			const auto mismatch = std::mismatch(left.cbegin(), left.cend(), right.cbegin(), right.cend(),
+				[](const gunichar lchar, const gunichar rchar) {
+					return g_unichar_tolower(lchar) == g_unichar_tolower(rchar);
+				});
+
+			if (mismatch.second != right.cend())
+				return false;
+
+			return mismatch.first == left.cend() || tolower(*mismatch.first) < tolower(*mismatch.second);
+		});
 	}
 }
