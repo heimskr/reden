@@ -140,6 +140,14 @@ namespace Reden {
 		return scroll();
 	}
 
+	LineView & LineView::nickChanged(const Glib::ustring &old_nick, const Glib::ustring &new_nick) {
+		return start().append(old_nick, "name").append(" changed name to ").append(new_nick, "name").scroll();
+	}
+
+	LineView & LineView::nickChanged(const Glib::ustring &new_nick) {
+		return start().append("You changed your name to ").append(new_nick, "name").scroll();
+	}
+
 	LineView & LineView::error(const Glib::ustring &text, bool is_markup) {
 		start();
 		auto &image = *widgets.emplace_back(new Gtk::Image(Gio::Icon::create("dialog-error")));

@@ -39,6 +39,9 @@ namespace Reden {
 			                const PingPong::ModeSet &);
 			LineView & topicChanged(std::shared_ptr<PingPong::Channel>, std::shared_ptr<PingPong::User>,
 			                        const Glib::ustring &);
+			LineView & nickChanged(const Glib::ustring &old_nick, const Glib::ustring &new_nick);
+			/** For self nick changes. */
+			LineView & nickChanged(const Glib::ustring &new_nick);
 			LineView & error(const Glib::ustring &, bool is_markup = false);
 
 			bool isAlive() const { return alive; }

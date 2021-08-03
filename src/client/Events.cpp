@@ -4,6 +4,7 @@
 #include "pingpong/events/Join.h"
 #include "pingpong/events/Mode.h"
 #include "pingpong/events/NamesUpdated.h"
+#include "pingpong/events/Nick.h"
 #include "pingpong/events/Part.h"
 #include "pingpong/events/Privmsg.h"
 #include "pingpong/events/Quit.h"
@@ -40,6 +41,20 @@ namespace Reden {
 			const auto &channel = ev->channel;
 			window.queue([this, channel] {
 				window.box.updateChannel(*channel);
+			});
+		});
+
+		PingPong::Events::listen<PingPong::NickEvent>([this](PingPong::NickEvent *ev) {
+			const auto &who = ev->who;
+			const auto &channel = ev->channel;
+			const auto &old_nick = ev->content;
+			window.queue([this, who, channel, old_nick] {
+				for (const auto &weak_channel: who->channels)
+					if (const auto channel = weak_channel.lock())
+						if (window.box.hasLineView(channel.get()))
+							window.box[channel].nickChanged(old_nick, who->name);
+				if (who->isSelf())
+					window.box[who->server].nickChanged(who->name);
 			});
 		});
 
