@@ -24,6 +24,7 @@ namespace Reden {
 
 	class Client {
 		public:
+			RedenWindow &window;
 			std::unordered_map<std::string, CompletionState> completionStates;
 			ConfigDB config;
 			ConfigCache cache;
@@ -71,7 +72,6 @@ namespace Reden {
 			void tabComplete();
 
 		private:
-			RedenWindow &window;
 			CommandCompleter completer;
 			std::multimap<Glib::ustring, Command> commandHandlers;
 			/** A set of all channels that are in ZNC's playback mode. */

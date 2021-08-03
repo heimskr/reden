@@ -1,6 +1,9 @@
 #include "UI.h"
 #include "core/Client.h"
+#include "ui/BasicEntry.h"
 #include "ui/ConnectDialog.h"
+#include "ui/EntryDialog.h"
+#include "ui/RedenWindow.h"
 
 #include "lib/formicine/futil.h"
 
@@ -15,23 +18,10 @@ namespace Reden {
 		populateConfigs();
 		comboModel = Gtk::ListStore::create(columns);
 		serverCombo.set_model(comboModel);
-		if (!serverConfigs.empty()) {
-			area.append(serverCombo);
-			bool first = true;
-			for (const auto &[name, config]: serverConfigs) {
-				auto iter = comboModel->append();
-				(*iter)[columns.name] = name;
-				(*iter)[columns.config] = config;
-				if (first) {
-					serverCombo.set_active(iter);
-					fill(config);
-					first = false;
-				}
-			}
-			serverCombo.pack_start(columns.name);
-			serverCombo.signal_changed().connect(sigc::mem_fun(*this, &ConnectDialog::on_combo_changed));
-		}
-
+		area.append(serverCombo);
+		resetCombo();
+		serverCombo.pack_start(columns.name);
+		serverCombo.signal_changed().connect(sigc::mem_fun(*this, &ConnectDialog::on_combo_changed));
 		hostEntry.set_placeholder_text("Hostname");
 		portEntry.set_placeholder_text("Port");
 		nickEntry.set_placeholder_text("Nickname");
@@ -56,8 +46,43 @@ namespace Reden {
 	}
 
 	void ConnectDialog::on_combo_changed() {
-		if (const auto iter = serverCombo.get_active())
-			fill((*iter)[columns.config]);
+		if (const auto iter = serverCombo.get_active()) {
+			const auto ptr = std::shared_ptr<ServerConfig>((*iter)[columns.config]);
+			if (ptr) {
+				fill(*ptr);
+			} else {
+				auto *sub = new EntryDialog<BasicEntry>("Save", *this, "Configuration name:", true);
+				subdialog.reset(sub);
+				sub->signal_submit().connect([this](const Glib::ustring &text) {
+					if (text.empty())
+						return;
+					Glib::ustring error;
+					long port;
+					if (text.find_first_of("=\n\r\t") != Glib::ustring::npos)
+						error = "Invalid name.";
+					else if (!formicine::util::parse_long(portEntry.get_text(), port) || port < 1 || INT_MAX < port)
+						error = "Invalid port.";
+
+					if (!error.empty()) {
+						client.window.queue([this, error] {
+							auto *dialog = new Gtk::MessageDialog(*subdialog, error, false, Gtk::MessageType::ERROR,
+								Gtk::ButtonsType::OK, true);
+							subdialog.reset(dialog);
+							dialog->signal_response().connect([this](int) {
+								subdialog->close();
+							});
+							dialog->show();
+						});
+					} else {
+						client.config.insert("servers", text, Glib::ustring(ServerConfig(hostEntry.get_text(),
+							nickEntry.get_text(), passwordEntry.get_text(), static_cast<int>(port))), true);
+						populateConfigs();
+						resetCombo();
+					}
+				});
+				subdialog->show();
+			}
+		}
 	}
 
 	void ConnectDialog::submit() {
@@ -69,7 +94,27 @@ namespace Reden {
 		serverConfigs.clear();
 		if (client.config.hasGroup("servers"))
 			for (const auto &key: client.config.allKeys("servers"))
-				serverConfigs.emplace(key, client.config.getString("servers", key));
+				serverConfigs.try_emplace(key, std::make_shared<ServerConfig>(client.config.getString("servers", key)));
+	}
+
+	void ConnectDialog::resetCombo() {
+		comboModel->clear();
+		if (!serverConfigs.empty()) {
+			bool first = true;
+			for (const auto &[name, config]: serverConfigs) {
+				auto iter = comboModel->append();
+				(*iter)[columns.name] = name;
+				(*iter)[columns.config] = config;
+				if (first) {
+					serverCombo.set_active(iter);
+					fill(*config);
+					first = false;
+				}
+			}
+		}
+		auto iter = comboModel->append();
+		(*iter)[columns.name] = "Save Configuration...";
+		(*iter)[columns.config] = nullptr;
 	}
 
 	void ConnectDialog::fill(const ServerConfig &config) {

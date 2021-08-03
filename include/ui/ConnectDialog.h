@@ -35,7 +35,7 @@ namespace Reden {
 				}
 
 				Gtk::TreeModelColumn<Glib::ustring> name;
-				Gtk::TreeModelColumn<ServerConfig> config;
+				Gtk::TreeModelColumn<std::shared_ptr<ServerConfig>> config;
 			};
 
 			Client &client;
@@ -44,14 +44,16 @@ namespace Reden {
 			Gtk::Button cancelButton {"Cancel"}, okButton {"OK"};
 			Gtk::ComboBox serverCombo;
 			Glib::RefPtr<Gtk::ListStore> comboModel;
-			std::map<Glib::ustring, ServerConfig> serverConfigs;
+			std::map<Glib::ustring, std::shared_ptr<ServerConfig>> serverConfigs;
 			Columns columns;
+			std::unique_ptr<Gtk::Dialog> subdialog;
 			sigc::signal<void(const Glib::ustring &host, const Glib::ustring &port, const Glib::ustring &nick,
 			                  const Glib::ustring &password)> signal_submit_;
 
 			void on_combo_changed();
 			void submit();
 			void populateConfigs();
+			void resetCombo();
 			void fill(const ServerConfig &);
 	};
 }

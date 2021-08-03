@@ -5,7 +5,7 @@
 #include "pingpong/core/Server.h"
 
 namespace Reden {
-	Client::Client(RedenWindow &window_): config(*this, true), window(window_), completer(*this) {}
+	Client::Client(RedenWindow &window_): window(window_), config(*this, true), completer(*this) {}
 
 	void Client::add(const Commands::Pair &p) {
 		commandHandlers.insert(p);
