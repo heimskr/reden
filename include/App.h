@@ -7,8 +7,6 @@
 namespace Reden {
 	class App: public Gtk::Application {
 		public:
-			Glib::RefPtr<Gtk::Builder> builder;
-
 			static Glib::RefPtr<App> create();
 			static const char * getText(const std::string &path, gsize &);
 			static const char * getText(const std::string &path);

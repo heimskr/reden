@@ -1,6 +1,7 @@
 *.o
 /reden
 /.dep
+/.dep.bak
 .vscode
 /libpingpong.a
 /src/resources.cpp
