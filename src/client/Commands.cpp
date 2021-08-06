@@ -141,5 +141,22 @@ namespace Reden {
 				}
 			}
 		}, &completeSet);
+
+		add("topic", 0, -1, true, [this](PingPong::Server *, const InputLine &il) {
+			PingPong::Channel *active_channel = nullptr;
+
+			const auto &active = window.box.active();
+			if (active.isAlive())
+				active_channel = window.box.activeChannel();
+
+			if (il.args.empty()) {
+				if (!active_channel)
+					noChannel();
+				else
+					window.box.active().topicIs(active_channel->shared_from_this(), std::string(active_channel->topic));
+			} else {
+				window.box.active().error("Changing topic not yet supported");
+			}
+		});
 	}
 }

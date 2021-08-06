@@ -146,6 +146,11 @@ namespace Reden {
 		return scroll();
 	}
 
+	LineView & LineView::topicIs(std::shared_ptr<PingPong::Channel> channel, const Glib::ustring &topic) {
+		start().append("Topic for ").append(channel->name, "channel").append(" is ").append(topic, "topic");
+		return scroll();
+	}
+
 	LineView & LineView::nickChanged(const Glib::ustring &old_nick, const Glib::ustring &new_nick) {
 		return start().append(old_nick, "name").append(" changed name to ").append(new_nick, "name").scroll();
 	}
