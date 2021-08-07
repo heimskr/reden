@@ -14,6 +14,7 @@
 #include "ui/RedenWindow.h"
 
 #include "pingpong/core/IRC.h"
+#include "pingpong/net/NetError.h"
 #include "lib/formicine/futil.h"
 
 namespace Reden {
@@ -44,8 +45,15 @@ namespace Reden {
 					delay([this] { error("Invalid port."); });
 					return;
 				}
-				irc->connect(hostname, nick, port, false, password);
-				box.focusEntry();
+				try {
+					irc->connect(hostname, nick, port, false, password);
+					box.focusEntry();
+				} catch (std::exception &err) {
+					Glib::ustring what = err.what();
+					delay([=, this] {
+						error("Error while connecting to " + hostname + ":" + std::to_string(port) + ": " + what);
+					});
+				}
 			});
 			connect->show();
 		}));
