@@ -71,10 +71,15 @@ namespace Reden {
 			LineView & set(PingPong::Server *);
 			LineView & set(PingPong::User *);
 
+			static constexpr const char * nameColors[] {"red", "orange", "yellow", "green", "cyan", "purple", "pink"};
+			static constexpr size_t colorCount = sizeof(nameColors) / sizeof(nameColors[0]);
+
 		private:
 			ConfigCache &cache;
 			Glib::RefPtr<Gtk::TextTag> timeTag, bracketTag, nameTag, messageTag, plainTag, actionTag, channelTag,
-			                           modesTag, userTag, topicTag, asteriskTag, selfTag, linkTag;
+			                           modesTag, userTag, topicTag, asteriskTag, selfTag, linkTag, name0, name1, name2,
+			                           name3, name4, name5, name6, name7, name8, name9, name10, name11, name12, name13,
+			                           name14, name15;
 			bool alive = true;
 			/** Whether the LineView was scrolled to the bottom at the beginning of the last call to start(). */
 			bool wasAtEnd = false;

@@ -9,6 +9,11 @@
 #include "ui/LineView.h"
 #include "pingpong/core/Channel.h"
 
+static Glib::ustring getNameTag(const Glib::ustring &name) {
+	const auto hash = std::hash<Glib::ustring>()(name);
+	return "name" + std::to_string(hash % Reden::LineView::colorCount);
+}
+
 namespace Reden {
 	LineView::LineView(ConfigCache &cache_): Gtk::TextView(), cache(cache_) {
 		add_css_class("lineview");
@@ -29,9 +34,25 @@ namespace Reden {
 		asteriskTag = buffer.create_tag("asterisk");
 		    selfTag = buffer.create_tag("self");
 		    linkTag = buffer.create_tag("link");
+			  name0 = buffer.create_tag("name0");
+			  name1 = buffer.create_tag("name1");
+			  name2 = buffer.create_tag("name2");
+			  name3 = buffer.create_tag("name3");
+			  name4 = buffer.create_tag("name4");
+			  name5 = buffer.create_tag("name5");
+			  name6 = buffer.create_tag("name6");
+			  name7 = buffer.create_tag("name7");
+			  name8 = buffer.create_tag("name8");
+			  name9 = buffer.create_tag("name9");
+			 name10 = buffer.create_tag("name10");
+			 name11 = buffer.create_tag("name11");
+			 name12 = buffer.create_tag("name12");
+			 name13 = buffer.create_tag("name13");
+			 name14 = buffer.create_tag("name14");
+			 name15 = buffer.create_tag("name15");
 		bracketTag->property_foreground() = "gray";
 		   timeTag->property_foreground() = "gray";
-		   linkTag->property_foreground() = "blue";
+		   linkTag->property_foreground() = "#4444ff";
 		   timeTag->property_font() = "Monospace";
 		   linkTag->property_underline() = Pango::Underline::SINGLE;
 		loadProperties();
@@ -41,6 +62,14 @@ namespace Reden {
 		setBold(userTag);
 		setBold(topicTag);
 		setBold(selfTag);
+		const auto name_tags = {name0, name1, name2, name3, name4, name5, name6, name7, name8, name9, name10, name11, name12, name13, name14, name15};
+		size_t i = 0;
+		for (const auto &name_tag: name_tags) {
+			setBold(name_tag);
+			name_tag->property_foreground() = nameColors[i++ % colorCount];
+		}
+
+
 		endMark = get_buffer()->create_mark(get_buffer()->end(), false);
 		click = Gtk::GestureClick::create();
 		click->signal_pressed().connect([this](int, double x, double y) {
@@ -275,10 +304,12 @@ namespace Reden {
 		}
 
 		append("<", "bracket");
-		if (is_self)
+		if (is_self) {
 			append(name, "self");
-		else
-			append(name, "name");
+		} else {
+			append(name, getNameTag(name));
+		}
+
 		append(">", "bracket").append(" ");
 
 		auto start_mark = Gtk::TextMark::create();
